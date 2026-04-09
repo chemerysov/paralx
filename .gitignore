@@ -1,0 +1,6 @@
+# editor: keep project-level configuration, exclude personal state
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json

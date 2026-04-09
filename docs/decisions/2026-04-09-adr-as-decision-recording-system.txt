@@ -74,5 +74,5 @@ documentation. That threshold will occasionally be unclear.
 
 Neutral: the docs/decisions/ folder will grow over time and may eventually
 benefit from subfolders by scope. If the project grows substantially, the ADR
-system may need to be supplemented or replaced by an RFC process, which would
-itself be recorded as a decision.
+system may need to be supplemented or replaced by an RFC process, would be an
+appropriate next step.
