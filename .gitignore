@@ -1,4 +1,4 @@
-# editor: keep project-level configuration, exclude personal state
+# see docs/decisions/2026-04-09-any-editor-as-editor-policy.txt
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json

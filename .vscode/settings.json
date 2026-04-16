@@ -1,10 +1,7 @@
 {
-    "editor.rulers": [
-        80
-    ],
-    "rewrap.wrappingColumn": 80,
-    "rewrap.autoWrap.enabled": true,
+    "files.insertFinalNewline": true,
+    // see docs/decisions/2026-04-15-80-as-txt-line-width.txt
     "[plaintext]": {
-        "editor.wordWrap": "off"
+        "editor.rulers": [80]
     }
 }

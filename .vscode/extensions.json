@@ -1,4 +1,5 @@
 {
+    // see docs/decisions/2026-04-15-80-as-txt-line-width.txt
     "recommendations": [
         "dnut.rewrap-revived"
     ]
