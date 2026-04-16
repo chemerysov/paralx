@@ -19,7 +19,6 @@ correct order, with each process restarted automatically on failure, connected
 to the others over a shared network, and configured consistently across
 development and production environments.
 
-
 DECISION
 
 Docker Compose is used to organise, start, supervise, and connect system
@@ -27,7 +26,6 @@ components. Each component runs in its own Docker container, defined in a
 docker-compose.yml file committed to the repository. The compose file is the
 authoritative description of what processes the system consists of and how they
 relate to each other.
-
 
 ALTERNATIVES CONSIDERED
 
