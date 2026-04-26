@@ -15,8 +15,11 @@
         "preview": "astro preview"
     },
 
-    "//": "to do",
+    "//": "chooses latest stable compatible under this major version",
     "dependencies": {
-        
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "astro": "^6.0.0",
+        "@astrojs/react": "^5.0.0"
     }
 }
