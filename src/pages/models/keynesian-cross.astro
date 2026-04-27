@@ -1,0 +1,44 @@
+---
+import Model from '../../layouts/Model.astro';
+import Math from '../../components/Math.astro';
+---
+
+<Model
+    title="Keynesian Cross"
+    description="How aggregate demand determines short-run equilibrium output."
+>
+
+<article>
+
+    <h1>Keynesian Cross</h1>
+
+    <section>
+        <h2>The accounting foundation</h2>
+        <p>
+            Gross domestic product is the sum of all expenditures
+            in an economy:
+        </p>
+        <Math formula="Y = C + I + G + X - M" display={true} />
+        <p>
+            Where <Math formula="C" /> is consumption,
+            <Math formula="I" /> is investment,
+            <Math formula="G" /> is government spending,
+            and <Math formula="X - M" /> is net exports.
+        </p>
+    </section>
+
+    <section>
+        <h2>Equilibrium</h2>
+        <p>
+            Equilibrium output is autonomous expenditure times
+            the Keynesian multiplier:
+        </p>
+        <Math
+            formula="Y^* = \frac{AE}{1 - \text{MPC}} = \frac{AE}{\text{MPS}}"
+            display={true}
+        />
+    </section>
+
+</article>
+
+</Model>
