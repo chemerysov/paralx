@@ -1,4 +1,4 @@
-TITLE: GitHub as the project's git hosting platform
+# GitHub as the project's git hosting platform
 
 DATE: 2026-04-09
 
@@ -6,27 +6,26 @@ STATUS: accepted
 
 AUTHOR: Andrii Chemerysov
 
-
-CONTEXT
+## CONTEXT
 
 The project requires a git hosting platform for repository access, issue
 tracking, and contributor collaboration. The choice of platform affects
 contributor onboarding friction, CI/CD availability, and the project's long-term
 dependency on external infrastructure.
 
-DECISION
+## DECISION
 
 The project is hosted on GitHub.
 
-ALTERNATIVES CONSIDERED
+## ALTERNATIVES CONSIDERED
 
-Self-hosted platforms: Gitea, Forgejo, and GitLab CE can all be run on
+**Self-hosted platforms**: Gitea, Forgejo, and GitLab CE can all be run on
 infrastructure the project controls, eliminating platform dependency entirely.
 Rejected because the operational overhead of running and maintaining a git host
 is not justified at the project's current scale, and the benefit of full
 ownership is not commensurate with that overhead for a project of this size.
 
-Managed third-party platforms: GitLab.com, Codeberg, and Bitbucket are all
+**Managed third-party platforms**: GitLab.com, Codeberg, and Bitbucket are all
 viable managed alternatives without GitHub's Microsoft ownership. Codeberg in
 particular is a non-profit Forgejo instance with principled governance. Rejected
 because they offer no practical advantage over GitHub at this scale while
@@ -34,7 +33,7 @@ requiring contributors to create and maintain accounts on a platform with a
 significantly smaller network and less familiar tooling. The ownership concern
 with GitHub is real but does not rise to the level of justifying that friction.
 
-RATIONALE
+## RATIONALE
 
 GitHub has an effectively unmatched network effect in open source. Contributors
 are overwhelmingly likely to already have accounts, be familiar with the
@@ -46,17 +45,17 @@ from Microsoft's ownership, but those advantages are largely theoretical at this
 scale and are outweighed by the concrete cost of reduced contributor
 accessibility.
 
-CONSEQUENCES
+## CONSEQUENCES
 
-Positive: contributor onboarding requires no new accounts or unfamiliar tooling.
-GitHub Actions is available immediately for CI/CD. The project is discoverable
-through GitHub's existing network.
+**Positive**: contributor onboarding requires no new accounts or unfamiliar
+tooling. GitHub Actions is available immediately for CI/CD. The project is
+discoverable through GitHub's existing network.
 
-Negative: the project takes a dependency on infrastructure it does not own or
-control. A platform policy change, acquisition event, or service degradation is
-outside the project's ability to prevent. Migration away from GitHub at a later
-stage carries a non-trivial cost.
+**Negative**: the project takes a dependency on infrastructure it does not own
+or control. A platform policy change, acquisition event, or service degradation
+is outside the project's ability to prevent. Migration away from GitHub at a
+later stage carries a non-trivial cost.
 
-Neutral: if the platform dependency becomes a meaningful concern as the project
-grows, migration to a self-hosted Forgejo instance or Codeberg would be an
-appropriate next step.
+**Neutral**: if the platform dependency becomes a meaningful concern as the
+project grows, migration to a self-hosted Forgejo instance or Codeberg would be
+an appropriate next step.

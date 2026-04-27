@@ -1,4 +1,4 @@
-TITLE: Hybrid rendering model as the frontend rendering strategy
+# Hybrid rendering model as the frontend rendering strategy
 
 DATE: 2026-04-16
 
@@ -6,8 +6,7 @@ STATUS: accepted
 
 AUTHOR: Andrii Chemerysov
 
-
-CONTEXT
+## CONTEXT
 
 The project's primary artifact is the model page: a page dedicated to a specific
 quantitative model, containing both static content and interactive elements
@@ -47,7 +46,7 @@ same page. Static and pre-rendered HTML for the prose and proof regions.
 Client-side rendered JavaScript components for the interactive regions. The two
 coexist on every model page.
 
-DECISION
+## DECISION
 
 The project uses a hybrid rendering model applied at the region level within
 pages rather than at the page. Static content regions, prose, proofs, and
@@ -59,9 +58,9 @@ as JavaScript components that hydrate after the surrounding static content is
 already visible and usable. This model applies to all model pages, which
 constitute the primary artifact of the project.
 
-ALTERNATIVES CONSIDERED
+## ALTERNATIVES CONSIDERED
 
-Pure client-side rendering for all content: A JavaScript bundle renders the
+**Pure client-side rendering for all content**: A JavaScript bundle renders the
 entire page including the prose and proof content. The server delivers an empty
 HTML shell. Rejected because the initial HTML would contain no meaningful
 content for crawlers or social platform scrapers, producing no search indexing
@@ -71,8 +70,8 @@ initial load experience for users on mobile connections encountering the project
 cold would also be poor, as nothing appears until the bundle downloads and
 executes.
 
-Pure server-side rendering for all content: The server renders complete HTML for
-every request including the interactive regions, and JavaScript handles
+**Pure server-side rendering for all content**: The server renders complete HTML
+for every request including the interactive regions, and JavaScript handles
 interactivity as progressive enhancement. Rejected because the interactive
 regions require a component model capable of re-rendering in response to
 parameter changes without server round trips for HTML. Pure server-side
@@ -82,7 +81,7 @@ maintain reimplementation of client-side rendering. It is also incompatible with
 client-side computation as a future option for the interactive regions, since
 client-side computation requires a capable JavaScript environment.
 
-RATIONALE
+## RATIONALE
 
 The model page structure, static content and interactive elements coexisting as
 parts of a single research argument, means the rendering decision cannot be made
@@ -99,28 +98,28 @@ respond to input, render dynamically. The framework decision that follows from
 this one must address how these two rendering strategies coexist within a single
 page without requiring contributors to maintain two entirely separate codebases.
 
-CONSEQUENCES
+## CONSEQUENCES
 
-Positive: the static content of model pages is fully indexed by search engines
-and produces meaningful link previews when shared. First paint is fast for
-unauthenticated users on mobile connections. Interactive regions are free to use
-a full client-side component model without the constraints that uniform
+**Positive**: the static content of model pages is fully indexed by search
+engines and produces meaningful link previews when shared. First paint is fast
+for unauthenticated users on mobile connections. Interactive regions are free to
+use a full client-side component model without the constraints that uniform
 pre-rendering would impose. The model is compatible with client-side computation
 as a future option for interactive regions. The architecture extends naturally
 to the later interconnected multi-model interface, which is the same structure
 at larger scope.
 
-Negative: the frontend implementation must manage two rendering strategies
+**Negative**: the frontend implementation must manage two rendering strategies
 within the same page, which increases the complexity of the framework decision
 that follows. Contributors must understand which rendering strategy applies to
 which region and what constraints each imposes. Regions that are ambiguously
 static or interactive, require explicit decisions about how they are treated
 during the pre-render phase.
 
-Neutral: the boundary between static and interactive regions within a page will
-require judgment as new content types are added. The mathematical proof regions
-are a clear case for static rendering, assuming server-side KaTeX rendering. The
-parameter and chart regions are a clear case for client-side rendering. Mixed
-regions or regions that transition between states are the most likely source of
-implementation ambiguity and will need to be addressed in the framework decision
-that follows.
+**Neutral**: the boundary between static and interactive regions within a page
+will require judgment as new content types are added. The mathematical proof
+regions are a clear case for static rendering, assuming server-side KaTeX
+rendering. The parameter and chart regions are a clear case for client-side
+rendering. Mixed regions or regions that transition between states are the most
+likely source of implementation ambiguity and will need to be addressed in the
+framework decision that follows.

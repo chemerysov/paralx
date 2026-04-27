@@ -1,4 +1,4 @@
-TITLE: TypeScript as the language for frontend code
+# TypeScript as the language for frontend code
 
 DATE: 2026-04-26
 
@@ -6,37 +6,36 @@ STATUS: accepted
 
 AUTHOR: Andrii Chemerysov
 
-
-CONTEXT
+## CONTEXT
 
 Prior decisions establish React as the component model for interactive frontend
-regions (2026-04-18-react-as-ui-component-library) and Astro as the frontend
-framework (2026-04-18-astro-as-frontend-framework). Both support TypeScript
+regions (`2026-04-18-react-as-ui-component-library`) and Astro as the frontend
+framework (`2026-04-18-astro-as-frontend-framework`). Both support TypeScript
 natively. The frontend codebase will be written by contributors whose
 backgrounds vary between finance and software engineering. The interactive
 regions of model pages pass quantitative data through component boundaries. A
 frontend language decision is required.
 
-DECISION
+## DECISION
 
 Frontend code is written in TypeScript.
 
-ALTERNATIVES CONSIDERED
+## ALTERNATIVES CONSIDERED
 
-Plain JavaScript: No type annotations, no change to the existing Astro build
+**Plain JavaScript**: No type annotations, no change to the existing Astro build
 pipeline, which accepts both languages without configuration. Rejected because
 the benefit of static type checking at the boundaries where quantitative data
 crosses component interfaces is concrete and directly relevant to the project's
 domain. The compilation step is not an additional operational cost because Astro
 compiles TypeScript transparently as part of its existing build.
 
-Hybrid: TypeScript for some files, plain JavaScript for others, with no enforced
-boundary. Rejected because files without type annotations provide degraded
-inference to the files that import them, reducing the value of type information
-at every downstream boundary. The cost of enforcing TypeScript consistently
-across the frontend is low.
+**Hybrid**: TypeScript for some files, plain JavaScript for others, with no
+enforced boundary. Rejected because files without type annotations provide
+degraded inference to the files that import them, reducing the value of type
+information at every downstream boundary. The cost of enforcing TypeScript
+consistently across the frontend is low.
 
-RATIONALE
+## RATIONALE
 
 TypeScript's primary value for this project is at the interfaces between
 components, where quantitative data structures are passed and consumed. A
@@ -48,17 +47,17 @@ annotation burden where it is most useful. Astro compiles TypeScript without
 additional tooling or configuration, meaning adoption introduces no new
 operational surface.
 
-CONSEQUENCES
+## CONSEQUENCES
 
-Positive: type errors at component boundaries are caught at development time
+**Positive**: type errors at component boundaries are caught at development time
 rather than at runtime. Editor tooling including autocompletion and inline
 documentation is more useful with type information present. Quantitative data
 structures crossing component interfaces are explicitly shaped.
 
-Negative: contributors unfamiliar with TypeScript face a learning curve on
+**Negative**: contributors unfamiliar with TypeScript face a learning curve on
 annotation syntax. Type definitions for third-party libraries occasionally
 diverge from actual runtime behavior, requiring suppression or workarounds.
 
-Neutral: TypeScript's types are erased at compile time and have no presence in
-the build output. Runtime validation of data arriving from the Go API is a
+**Neutral**: TypeScript's types are erased at compile time and have no presence
+in the build output. Runtime validation of data arriving from the Go API is a
 separate concern not addressed by this decision.

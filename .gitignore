@@ -1,6 +1,7 @@
-# see docs/decisions/2026-04-09-any-editor-as-editor-policy.txt
+# as per 2026-04-09-any-editor-as-editor-policy.txt
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 !.vscode/tasks.json
 !.vscode/launch.json
+node_modules

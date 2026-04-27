@@ -1,4 +1,4 @@
-TITLE: PostgreSQL as the database
+# PostgreSQL as the database
 
 DATE: 2026-04-18
 
@@ -6,8 +6,7 @@ STATUS: accepted
 
 AUTHOR: Andrii Chemerysov
 
-
-CONTEXT
+## CONTEXT
 
 The project stores data across several categories with distinct access patterns:
 low-frequency macro and fundamental data pulled from external sources on event
@@ -19,13 +18,13 @@ documents such as regulatory filings rather than from structured data providers,
 producing output whose schema varies across sources and cannot be fully
 normalized in advance. A database is required.
 
-DECISION
+## DECISION
 
 PostgreSQL is used as the project's database.
 
-ALTERNATIVES CONSIDERED
+## ALTERNATIVES CONSIDERED
 
-Polyglot persistence: different data categories are served by different
+**Polyglot persistence**: different data categories are served by different
 databases each selected for that category's access pattern, for example a
 dedicated time-series database such as InfluxDB or QuestDB for high-frequency
 market data, a document database such as MongoDB for unstructured extraction
@@ -38,7 +37,7 @@ system, and each additional database introduced multiplies the persistence
 layer's operational surface: installation, configuration, backups, upgrades, and
 failure modes, for an advantage the project does not currently need.
 
-Document database: stores records as flexible JSON-like documents without a
+**Document database**: stores records as flexible JSON-like documents without a
 fixed schema. Each record in a collection can have a different structure, and no
 schema is enforced at write time. MongoDB is the canonical example. This
 flexibility is the correct fit when the shape of stored data cannot be known in
@@ -54,8 +53,8 @@ type provides document-like flexibility for the columns that do, without
 introducing a second system or forgoing relational integrity guarantees
 elsewhere.
 
-Column-oriented analytical database: stores data column by column rather than
-row by row, making aggregation queries across many rows and few columns
+**Column-oriented analytical database**: stores data column by column rather
+than row by row, making aggregation queries across many rows and few columns
 significantly faster at the cost of slower individual row writes. ClickHouse and
 DuckDB are examples. The project's primary database access patterns are
 retrieval of recent time-series windows and relational reads, not bulk
@@ -63,7 +62,7 @@ analytical aggregation across large historical datasets. Rejected as the primary
 persistence layer. DuckDB remains worth considering as an embedded analytical
 layer within the Python engine for local computation over fetched data.
 
-Key-value store as primary database: stores arbitrary values under arbitrary
+**Key-value store as primary database**: stores arbitrary values under arbitrary
 keys with no schema or relational structure. Redis is the primary example.
 Lookup by key is extremely fast, typically sub-millisecond, because there is
 almost no structure to navigate. The project's data has too much internal
@@ -72,7 +71,7 @@ as the primary persistence layer. Redis remains worth considering as a caching
 layer in front of PostgreSQL if read latency on frequently accessed data becomes
 a concern.
 
-RATIONALE
+## RATIONALE
 
 PostgreSQL handles all current data categories without requiring a second
 system. Its maturity, operational tooling, and Go and Python client library
@@ -81,17 +80,17 @@ extension ecosystem includes mature solutions for time-series workloads and
 flexible document storage, meaning specialised requirements can be addressed
 within the same system without introducing a second database or migrating data.
 
-CONSEQUENCES
+## CONSEQUENCES
 
-Positive: one database system covers all current data categories. PostgreSQL's
-extension ecosystem provides options for time-series performance and flexible
-document storage if specific data categories require them. Go and Python client
-library coverage is comprehensive.
+**Positive**: one database system covers all current data categories.
+PostgreSQL's extension ecosystem provides options for time-series performance
+and flexible document storage if specific data categories require them. Go and
+Python client library coverage is comprehensive.
 
-Negative: PostgreSQL is not optimized for time-series workloads or flexible
+**Negative**: PostgreSQL is not optimized for time-series workloads or flexible
 document storage out of the box. Addressing either requirement introduces an
 extension dependency whose selection is a separate decision.
 
-Neutral: if data volumes or structural requirements grow beyond what PostgreSQL
-and its extensions handle adequately, a dedicated system becomes the live
-option. That decision is deferred.
+**Neutral**: if data volumes or structural requirements grow beyond what
+PostgreSQL and its extensions handle adequately, a dedicated system becomes the
+live option. That decision is deferred.

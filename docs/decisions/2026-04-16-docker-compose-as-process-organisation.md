@@ -1,5 +1,4 @@
-TITLE: Docker Compose as the tool for organising and supervising separate
-persistent processes
+# Docker Compose as the tool for separate persistent processes
 
 DATE: 2026-04-16
 
@@ -7,10 +6,9 @@ STATUS: accepted
 
 AUTHOR: Andrii Chemerysov
 
+## CONTEXT
 
-CONTEXT
-
-A prior decision (2026-04-16-persistent-processes-as-runtime-architecture)
+A prior decision (`2026-04-16-persistent-processes-as-runtime-architecture`)
 establishes that system components run as separate persistent processes. That
 decision defers the question of how those processes are organised, started,
 supervised, and connected. This decision answers that question. The problem is
@@ -19,17 +17,17 @@ correct order, with each process restarted automatically on failure, connected
 to the others over a shared network, and configured consistently across
 development and production environments.
 
-DECISION
+## DECISION
 
 Docker Compose is used to organise, start, supervise, and connect system
 components. Each component runs in its own Docker container, defined in a
-docker-compose.yml file committed to the repository. The compose file is the
+`docker-compose.yml` file committed to the repository. The compose file is the
 authoritative description of what processes the system consists of and how they
 relate to each other.
 
-ALTERNATIVES CONSIDERED
+## ALTERNATIVES CONSIDERED
 
-Systemd: The init and service management system present on all modern Linux
+**Systemd**: The init and service management system present on all modern Linux
 distributions. Each component is registered as a systemd service via a unit file
 specifying the start command, restart policy, dependency ordering, and logging
 configuration. Systemd handles starting services in the correct order,
@@ -44,18 +42,18 @@ system, is absent. Systemd remains an appropriate mechanism for starting the
 Docker daemon itself and for any system-level services that precede the
 application layer.
 
-Supervisor: A process control system that manages application processes, handles
-restarts on failure, and provides a unified interface for checking status and
-reading logs. Simpler to configure than systemd for application processes
-specifically. Rejected for the same fundamental reasons as systemd: no
+**Supervisor**: A process control system that manages application processes,
+handles restarts on failure, and provides a unified interface for checking
+status and reading logs. Simpler to configure than systemd for application
+processes specifically. Rejected for the same fundamental reasons as systemd: no
 environment isolation, no reproducibility across machines, and configuration
 that does not naturally live in the repository. Supervisor is also an additional
 dependency that must be installed on the server, unlike systemd which is already
 present. Its primary advantage over systemd, a simpler configuration format,
 does not outweigh these costs.
 
-Procfile runner: A Procfile lists named processes and their start commands. A
-runner such as Overmind or Hivemind reads the file and starts all processes
+**Procfile runner**: A Procfile lists named processes and their start commands.
+A runner such as Overmind or Hivemind reads the file and starts all processes
 together, multiplexing their log output in a single terminal session. The
 Procfile lives in the repository and makes the system's process composition
 immediately visible. Rejected as the primary organisation mechanism because
@@ -66,16 +64,16 @@ unattended operation. The project does not maintain a Procfile. Contributors who
 prefer to run components directly without Docker may maintain one for their own
 use, but it is not a project artifact.
 
-Shell scripts: Start and stop scripts that launch each process in the background
-and record their process identifiers for later termination. Rejected because
-shell scripts do not provide automatic restart on failure, do not manage
+**Shell scripts**: Start and stop scripts that launch each process in the
+background and record their process identifiers for later termination. Rejected
+because shell scripts do not provide automatic restart on failure, do not manage
 dependency ordering between processes, and accumulate maintenance burden as the
 number of components and their configuration grows. They also provide no
 isolation or reproducibility. Shell scripts remain appropriate for narrow
 automation tasks within the deployment pipeline but not as the primary
 supervision mechanism.
 
-RATIONALE
+## RATIONALE
 
 Docker Compose addresses the full set of concerns the organising decision must
 answer. Each component runs in a container built from an image that specifies
@@ -92,25 +90,26 @@ component is brought back without operator intervention. Dependency ordering,
 specifying that the application server should not start before the engine and
 the database are ready, is declared in the same file.
 
-CONSEQUENCES
+## CONSEQUENCES
 
-Positive: the system's full composition is described in a single file committed
-to the repository. One command starts all components in the correct order. One
-command stops them. Environments are reproducible across machines. Dependency
-conflicts between components are contained. Restart on failure is configured
-declaratively. The virtual network provides the connectivity layer for
-inter-process communication without additional configuration.
+**Positive**: the system's full composition is described in a single file
+committed to the repository. One command starts all components in the correct
+order. One command stops them. Environments are reproducible across machines.
+Dependency conflicts between components are contained. Restart on failure is
+configured declaratively. The virtual network provides the connectivity layer
+for inter-process communication without additional configuration.
 
-Negative: contributors must have Docker installed to run the full system. Each
-component requires a Dockerfile specifying how its image is built, adding a file
-and a build step per component. Image builds add time to the development cycle
-when dependencies change. The Docker daemon is an additional running process on
-the host with its own resource consumption. Debugging sometimes requires
-reasoning through the container layer, which adds a step that direct process
-execution does not.
+**Negative**: contributors must have Docker installed to run the full system.
+Each component requires a Dockerfile specifying how its image is built, adding a
+file and a build step per component. Image builds add time to the development
+cycle when dependencies change. The Docker daemon is an additional running
+process on the host with its own resource consumption. Debugging sometimes
+requires reasoning through the container layer, which adds a step that direct
+process execution does not.
 
-Neutral: Docker Compose is a single-host tool and does not support distributing
-containers across multiple machines. If the project eventually outgrows a single
-server, migration to a multi-host orchestrator such as Kubernetes would be the
-appropriate next step and would be recorded as a superseding decision. That
-concern is not relevant at the project's current scale.
+**Neutral**: Docker Compose is a single-host tool and does not support
+distributing containers across multiple machines. If the project eventually
+outgrows a single server, migration to a multi-host orchestrator such as
+Kubernetes would be the appropriate next step and would be recorded as a
+superseding decision. That concern is not relevant at the project's current
+scale.

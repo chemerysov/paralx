@@ -1,0 +1,67 @@
+# 80 columns as the line width limit for plaintext (.txt) files
+
+DATE: 2026-04-15
+
+STATUS: accepted
+
+AUTHOR: Andrii Chemerysov
+
+## CONTEXT
+
+Without a stated limit, contributors apply their own defaults, which vary. A
+uniform width makes the documents read consistently and keeps them accessible on
+small displays and under screen magnification. Code files in the repository are
+left to their respective language ecosystems and are not governed by this
+decision. A vertical ruler at column 80 scoped to plaintext files is committed
+to `.vscode/settings.json`. A VS Code extension for reformatting prose to a
+target column width is committed to `.vscode/extensions.json` to assist
+contributors who are not accustomed to manually managing line breaks. Editor
+configuration reflecting the same limit is welcome for other editors under the
+terms of the editor policy decision (`2026-04-09-any-editor-as-editor-policy`).
+
+## DECISION
+
+Plaintext files in the repository observe a soft maximum line width of 80
+columns. The limit is a convention. Lines that cannot reasonably fit within 80
+columns without degrading readability or corrupting meaning are left as they
+are. Long URLs are the most likely legitimate exception.
+
+## ALTERNATIVES CONSIDERED
+
+**72 columns**: The traditional width for email bodies and git commit messages,
+and a defensible choice for a project whose primary document format is plaintext
+prose. Rejected because 72 columns produces noticeably narrow text with no
+meaningful accessibility gain over 80. The difference is aesthetic and does not
+favour 72.
+
+**100 columns**: A comfortable width for code and a common configuration in
+several language ecosystems. Rejected because the project's primary author works
+on a small display with some visual impairment, for whom wider lines require
+horizontal scrolling or reduced font sizes. Prose also does not benefit from the
+additional width the way code does.
+
+**No stated limit**: Leaves each contributor to apply their own default,
+producing inconsistency across documents and authors. Rejected because
+consistency in prose documents is cheap to achieve and meaningful to maintain.
+
+## RATIONALE
+
+80 columns is the limit with the longest unbroken tradition in computing and the
+strongest accessibility justification. Prose authored at a natural pace sits
+comfortably within 80 columns without effort or contortion.
+
+## CONSEQUENCES
+
+**Positive**: plaintext documents read consistently regardless of contributor
+background. The limit is accessible on small displays and under screen
+magnification.
+
+**Negative**: contributors accustomed to writing without a column constraint
+will need to be conscious of line breaks in prose, which is a mild habit
+adjustment. The committed VS Code extension for column-aware prose reformatting
+reduces this friction for contributors using VS Code. Contributors using other
+editors are responsible for finding equivalent tooling if they need it.
+
+**Neutral**: the limit is enforced by convention and the editor ruler rather
+than by automated tooling. Whether automated enforcement for plaintext is
+warranted is a separate decision.

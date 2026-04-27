@@ -1,6 +1,9 @@
 {
-    // see docs/decisions/2026-04-15-80-as-txt-line-width.txt
     "recommendations": [
-        "dnut.rewrap-revived"
+        // see 2026-04-15-80-as-txt-line-width
+        "dnut.rewrap-revived",
+
+        // see 2026-04-18-astro-as-frontend-framework
+        "astro-build.astro-vscode"
     ]
 }

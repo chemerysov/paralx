@@ -1,7 +1,8 @@
 {
     "files.insertFinalNewline": true,
-    // see docs/decisions/2026-04-15-80-as-txt-line-width.txt
-    "[plaintext]": {
+    
+    // see 2026-04-15-80-as-txt-line-width.txt
+    "[markdown]": {
         "editor.rulers": [80]
     }
 }

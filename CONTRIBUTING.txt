@@ -1,0 +1,22 @@
+PREREQUISITES
+
+Node.js 22.0.0+
+    Command to check version:
+        node --version
+
+pnpm
+    Command to install:
+        npm install -g pnpm
+
+
+SETUP
+
+Command to install dependencies (folder node_modules):
+    pnpm install
+
+
+APPENDIX
+
+Node.js 22.0.0+ required by Astro 6.
+    See 2026-04-25-nodejs-as-frontend-build-runtime.txt
+    See 2026-04-18-astro-as-frontend-framework.txt

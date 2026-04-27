@@ -1,4 +1,4 @@
-TITLE: React as the component model for interactive frontend regions
+# React as the component model for interactive frontend regions
 
 DATE: 2026-04-18
 
@@ -6,10 +6,9 @@ STATUS: accepted
 
 AUTHOR: Andrii Chemerysov
 
+## CONTEXT
 
-CONTEXT
-
-A prior decision (2026-04-16-hybrid-as-rendering-model) establishes that the
+A prior decision (`2026-04-16-hybrid-as-rendering-model`) establishes that the
 project uses a hybrid rendering model in which static content regions are
 pre-rendered to HTML and interactive regions are rendered client-side as
 JavaScript components. Several properties of the project bear directly on the
@@ -19,27 +18,27 @@ reflected in data visualizations. The project intends to reach retail investors
 and the general financially curious public, not only quantitative specialists.
 This creates a mobile performance requirement.
 
-DECISION
+## DECISION
 
 Interactive regions of model pages are written as React components.
 
-ALTERNATIVES CONSIDERED
+## ALTERNATIVES CONSIDERED
 
-Vue: A component model using single-file components, each containing a template
-section, a script section, and a scoped style section. Vue's reactivity system
-tracks dependencies at runtime and updates precisely the components that depend
-on changed values, without re-running component functions. The single-file
-component format is more approachable than JSX for contributors whose background
-is in HTML rather than JavaScript. Rejected primarily on ecosystem grounds. The
-financial chart library coverage in the Vue ecosystem is thinner than in
-React's: the available options are framework-agnostic libraries with Vue
-wrappers rather than libraries built natively for Vue's component model. For a
-project where chart quality and variety are central requirements, this is a
-material disadvantage. The contributor accessibility argument also does not
-favor Vue over React for the likely contributor demographic of an open source
-quantitative finance project.
+**Vue**: A component model using single-file components, each containing a
+template section, a script section, and a scoped style section. Vue's reactivity
+system tracks dependencies at runtime and updates precisely the components that
+depend on changed values, without re-running component functions. The
+single-file component format is more approachable than JSX for contributors
+whose background is in HTML rather than JavaScript. Rejected primarily on
+ecosystem grounds. The financial chart library coverage in the Vue ecosystem is
+thinner than in React's: the available options are framework-agnostic libraries
+with Vue wrappers rather than libraries built natively for Vue's component
+model. For a project where chart quality and variety are central requirements,
+this is a material disadvantage. The contributor accessibility argument also
+does not favor Vue over React for the likely contributor demographic of an open
+source quantitative finance project.
 
-Svelte: A compiler-based component model that produces JavaScript with no
+**Svelte**: A compiler-based component model that produces JavaScript with no
 framework runtime in the browser. Components are written in single-file .svelte
 files and compiled into code that directly manipulates the DOM when state
 changes, without a virtual DOM or diffing step. The resulting bundles are
@@ -55,7 +54,7 @@ React's, which is a concrete cost for an open source project. The mobile bundle
 size advantage is real but does not outweigh the ecosystem deficit at this
 stage.
 
-Solid: A component model with React-compatible JSX syntax but fine-grained
+**Solid**: A component model with React-compatible JSX syntax but fine-grained
 reactivity that avoids virtual DOM diffing and avoids re-running component
 functions on state changes. Benchmarks consistently place Solid at or near the
 top of JavaScript framework performance comparisons. Rejected because the
@@ -63,7 +62,7 @@ ecosystem is not mature: chart library coverage is thin, the contributor pool is
 small, and the community knowledge base is limited. The technical model is
 compelling and the option remains worth revisiting as the ecosystem matures.
 
-RATIONALE
+## RATIONALE
 
 React's primary advantage for this project is the breadth and maturity of its
 chart library ecosystem. The interactive regions of model pages are
@@ -86,9 +85,9 @@ JavaScript loads, are more impactful than the component model runtime size. The
 40 kilobyte React runtime is a bounded and known cost, not an unbounded one that
 grows with the application.
 
-CONSEQUENCES
+## CONSEQUENCES
 
-Positive: the full React chart library ecosystem is available, including
+**Positive**: the full React chart library ecosystem is available, including
 libraries built natively for React's component model and mature wrappers for
 framework-agnostic libraries. Contributor familiarity is highest of the
 available options. The framework decision that follows is constrained to
@@ -96,8 +95,8 @@ React-based frameworks, which are the most mature and most documented options
 for implementing the hybrid rendering model. The component model is compatible
 with client-side computation as a future option.
 
-Negative: the React runtime adds approximately 40 to 45 kilobytes compressed to
-every page's JavaScript bundle. This is a fixed overhead that Svelte does not
+**Negative**: the React runtime adds approximately 40 to 45 kilobytes compressed
+to every page's JavaScript bundle. This is a fixed overhead that Svelte does not
 incur. JSX, the syntax extension React uses for expressing component markup,
 requires a build step to transform into JavaScript the browser can execute, and
 is unfamiliar to contributors who have not previously worked with React. React's
@@ -105,7 +104,7 @@ re-render model, in which component functions re-run on state changes, requires
 familiarity with memoization patterns to avoid unnecessary computation in
 components that contain expensive operations.
 
-Neutral: the framework decision that follows this one is now constrained to
+**Neutral**: the framework decision that follows this one is now constrained to
 React-based frameworks and to framework-agnostic tools such as Astro that
 support React as a component model for interactive islands. The framework
 decision will determine how React components are integrated with the

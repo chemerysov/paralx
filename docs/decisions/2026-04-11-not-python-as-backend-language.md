@@ -1,4 +1,4 @@
-TITLE: Python is rejected as the application server language
+# Python is rejected as the application server language
 
 DATE: 2026-04-11
 
@@ -6,8 +6,7 @@ STATUS: accepted
 
 AUTHOR: Andrii Chemerysov
 
-
-CONTEXT
+## CONTEXT
 
 Python has been established in paralx as the language of the calculation engine.
 A separate question is what language governs the application server. The engine
@@ -18,13 +17,13 @@ handling. This ADR records the decision that those grounds justify a language
 boundary between the two components. The specific language for the application
 server is to be recorded in another decision.
 
-DECISION
+## DECISION
 
 The application server is implemented in a language other than Python. The
 specific language is determined in a subsequent decision. Python remains the
 exclusive language of the calculation engine.
 
-CONSIDERATIONS
+## CONSIDERATIONS
 
 Python's Global Interpreter Lock prevents true parallelism within a single
 process for CPU-bound work. Async frameworks such as FastAPI mitigate this for
@@ -77,10 +76,10 @@ infrastructure. The project effectively has two contributor profiles,
 researchers in Python and infrastructure contributors in the application server
 language. This is a cost that is accepted.
 
-ALTERNATIVES CONSIDERED
+## ALTERNATIVES CONSIDERED
 
-Python for the application server, engine as imported library: The engine is a
-Python module imported directly by a Python web framework. One language, one
+**Python for the application server, engine as imported library**: The engine is
+a Python module imported directly by a Python web framework. One language, one
 process, one deployment unit. No network call, no serialization, no interface
 versioning. Debugging and testing require no cross-process coordination.
 Rejected because it couples the web server and engine lifecycles irrevocably.
@@ -90,9 +89,9 @@ the memory and concurrency costs of a single Python runtime. Remains viable if
 scope stays narrow and usage stays very low, and is noted as a fallback if the
 multilingual architecture proves too costly for contributors.
 
-Python for the application server, engine as task queue worker: The engine runs
-as a separate Python worker process consuming jobs from a queue such as Celery
-backed by Redis. The web server deposits tasks without blocking. Rejected
+**Python for the application server, engine as task queue worker**: The engine
+runs as a separate Python worker process consuming jobs from a queue such as
+Celery backed by Redis. The web server deposits tasks without blocking. Rejected
 because it adds a third operational component, the queue, without addressing the
 memory or concurrency concerns that motivate this decision. Queue infrastructure
 introduces its own failure modes: tasks lost, queues filled, workers crashed
@@ -101,7 +100,7 @@ language change addresses the concurrency concerns more directly. A task queue
 remains a candidate for internal engine parallelism independently of this
 decision.
 
-RATIONALE
+## RATIONALE
 
 The application server and the calculation engine have different operational
 profiles, resource characteristics, and concurrency requirements. Python is the
@@ -112,20 +111,20 @@ contribution layer accessible without requiring a second language, and opens the
 application server to languages better suited to concurrent connection handling
 and memory-constrained deployment.
 
-CONSEQUENCES
+## CONSEQUENCES
 
-Positive: the engine's memory and CPU headroom is not competed for by the
+**Positive**: the engine's memory and CPU headroom is not competed for by the
 application server. The application server handles concurrent and I/O-bound
 workloads more efficiently. Each component can be restarted, configured, and
 eventually scaled independently. Research contributors work entirely in Python.
 The engine interface is explicit and machine-readable.
 
-Negative: a network interface between the two components must be defined,
+**Negative**: a network interface between the two components must be defined,
 maintained, and managed for compatibility as the engine evolves. Debugging
 cross-component requests requires correlating logs across two processes in two
 languages. Contributors making cross-cutting changes must know both languages.
 
-Neutral: the engine interface, as a versioned artifact, requires governance as
-the project grows. Changes to model inputs or outputs carry compatibility
+**Neutral**: the engine interface, as a versioned artifact, requires governance
+as the project grows. Changes to model inputs or outputs carry compatibility
 implications that purely internal refactors do not. Whether this overhead is net
 positive depends on interface stability over time.

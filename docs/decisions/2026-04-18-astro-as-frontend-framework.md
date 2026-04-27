@@ -1,4 +1,4 @@
-TITLE: Astro as the frontend framework
+# Astro as the frontend framework
 
 DATE: 2026-04-18
 
@@ -6,14 +6,13 @@ STATUS: accepted
 
 AUTHOR: Andrii Chemerysov
 
-
-CONTEXT
+## CONTEXT
 
 Prior decisions establish a hybrid rendering model
-(2026-04-16-hybrid-as-rendering-model), React as the component library for
-interactive regions (2026-04-18-react-as-ui-component-library), and build-time
+(`2026-04-16-hybrid-as-rendering-model`), React as the component library for
+interactive regions (`2026-04-18-react-as-ui-component-library`), and build-time
 static generation as the HTML production strategy
-(2026-04-18-build-time-as-frontend-html-generation). A frontend framework is
+(`2026-04-18-build-time-as-frontend-html-generation`). A frontend framework is
 needed to implement these decisions in combination.
 
 The project's primary artifact is a model page: a research and methodology
@@ -31,7 +30,7 @@ authored by contributors, and its inter-component state relationships may be
 dense enough to warrant different choices. That decision is deferred until the
 scope justifies it and is not a concern at the project's current stage.
 
-DECISION
+## DECISION
 
 Astro is used as the frontend framework for the project. Model pages are
 authored as Astro pages, with static content regions rendered to HTML at build
@@ -39,12 +38,12 @@ time and interactive regions implemented as React components hydrated as Astro
 islands. The build output is a folder of static HTML files and JavaScript
 bundles served by the Go application server.
 
-ALTERNATIVES CONSIDERED
+## ALTERNATIVES CONSIDERED
 
-Next.js in static export mode: A React framework that supports static generation
-through its server component and client component distinction. Server components
-run at build time and produce static HTML. Client components hydrate as
-interactive regions in the browser. Static export mode produces a folder of
+**Next.js in static export mode**: A React framework that supports static
+generation through its server component and client component distinction. Server
+components run at build time and produce static HTML. Client components hydrate
+as interactive regions in the browser. Static export mode produces a folder of
 static files with no Node.js server required in production, satisfying the
 build-time generation ADR. The structural fit is reasonable but the mental model
 is inverted relative to the project's primary artifact: Next.js treats pages as
@@ -59,22 +58,23 @@ defaults toward Vercel deployment and its documentation and advanced features
 consistently assume that context, requiring deliberate effort to operate against
 a different deployment model.
 
-Gatsby: A React-based static site generator that pulls content through a GraphQL
-data layer and generates static HTML at build time. Rejected on grounds of build
-performance, which is slow relative to alternatives and paid on every content
-change, a coarse hydration model that downloads all page JavaScript at once
-without per-island scheduling, and a development trajectory that slowed
+**Gatsby**: A React-based static site generator that pulls content through a
+GraphQL data layer and generates static HTML at build time. Rejected on grounds
+of build performance, which is slow relative to alternatives and paid on every
+content change, a coarse hydration model that downloads all page JavaScript at
+once without per-island scheduling, and a development trajectory that slowed
 significantly after its acquisition by Netlify in 2023.
 
-Pure React with Vite and no framework: React components bundled by Vite with no
-static generation layer. Rejected because Vite is a bundler, not a static site
-generator. It produces a JavaScript bundle and an empty HTML shell with no
+**Pure React with Vite and no framework**: React components bundled by Vite with
+no static generation layer. Rejected because Vite is a bundler, not a static
+site generator. It produces a JavaScript bundle and an empty HTML shell with no
 mechanism for executing React components at build time and embedding their
 output as pre-rendered HTML. This produces pure client-side rendering, violating
-the hybrid rendering ADR's requirement (2026-04-16-hybrid-as-frontend-rendering)
-that static content regions be present in the HTML before JavaScript runs.
+the hybrid rendering ADR's requirement
+(`2026-04-16-hybrid-as-frontend-rendering`) that static content regions be
+present in the HTML before JavaScript runs.
 
-RATIONALE
+## RATIONALE
 
 Astro's design premise matches the structure of the project's primary artifact
 more precisely than any alternative. Astro treats pages as HTML documents by
@@ -97,26 +97,26 @@ without requiring deliberate resistance to framework defaults. The framework's
 development is not structurally entangled with any specific hosting platform's
 commercial interests.
 
-CONSEQUENCES
+## CONSEQUENCES
 
-Positive: the framework's default behavior produces static HTML output served by
-the Go server with no production JavaScript runtime. Per-island hydration
-scheduling reduces initial JavaScript weight for long model pages, improving
-load performance for mobile users. The document-first mental model matches the
-structure of model pages. React is fully supported as the component library for
-interactive islands. The framework's governance is not tied to a specific
-hosting platform.
+**Positive**: the framework's default behavior produces static HTML output
+served by the Go server with no production JavaScript runtime. Per-island
+hydration scheduling reduces initial JavaScript weight for long model pages,
+improving load performance for mobile users. The document-first mental model
+matches the structure of model pages. React is fully supported as the component
+library for interactive islands. The framework's governance is not tied to a
+specific hosting platform.
 
-Negative: Astro is younger than Next.js with a smaller community, thinner
+**Negative**: Astro is younger than Next.js with a smaller community, thinner
 documentation coverage, and less Stack Overflow presence. Contributors encounter
-the .astro file format and the build-time code fence as something new, not
+the `.astro` file format and the build-time code fence as something new, not
 covered by existing React knowledge. Inter-island state sharing requires a
 mechanism outside React's standard state system, such as Nano Stores, adding a
 dependency and a pattern contributors must learn. For the current scope of
 independent model pages this is rarely needed, but it becomes relevant if pages
 grow more interconnected.
 
-Neutral: the future synthesis applications, if and when the project's model
+**Neutral**: the future synthesis applications, if and when the project's model
 coverage makes it warranted, may require a different framework better suited to
 a dense stateful application than to a document with embedded islands. That
 decision is deferred and will be made against the project's state at that time.

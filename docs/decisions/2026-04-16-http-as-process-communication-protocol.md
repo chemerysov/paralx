@@ -1,4 +1,4 @@
-TITLE: HTTP as the inter-process communication protocol
+# HTTP as the inter-process communication protocol
 
 DATE: 2026-04-16
 
@@ -6,13 +6,12 @@ STATUS: accepted
 
 AUTHOR: Andrii Chemerysov
 
-
-CONTEXT
+## CONTEXT
 
 Prior decisions establish that system components run as separate persistent
-processes (2026-04-16-persistent-processes-as-runtime-architecture) and that
+processes (`2026-04-16-persistent-processes-as-runtime-architecture`) and that
 those processes are organised and supervised by Docker Compose
-(2026-04-16-docker-compose-as-process-organisation). Docker Compose is a
+(`2026-04-16-docker-compose-as-process-organisation`). Docker Compose is a
 single-host tool: all containers run on the same machine and communicate over a
 private virtual bridge network. This decision is explicitly downstream from that
 constraint. The network path between components is a loopback-adjacent
@@ -25,19 +24,18 @@ a multi-host orchestrator such as Kubernetes, that constraint changes. The
 format used for request and response bodies is a separate decision not settled
 here.
 
-
-DECISION
+## DECISION
 
 Inter-process communication between system components uses HTTP. The Python
 engine exposes an HTTP server. The Go application server makes HTTP requests to
 it.
 
-ALTERNATIVES CONSIDERED
+## ALTERNATIVES CONSIDERED
 
-gRPC: A remote procedure call framework built on HTTP/2 with a binary encoding
-defined in schema files. Offers a formal machine-checked contract between the
-two sides enforced by generated code, native support for streaming where a
-single call carries a sequence of messages in either direction, and more
+**gRPC**: A remote procedure call framework built on HTTP/2 with a binary
+encoding defined in schema files. Offers a formal machine-checked contract
+between the two sides enforced by generated code, native support for streaming
+where a single call carries a sequence of messages in either direction, and more
 efficient framing than plain HTTP for high-frequency calls. Rejected for now on
 the grounds of toolchain familiarity and upfront complexity. gRPC requires
 maintaining .proto schema files, running a code generation step that produces Go
@@ -51,15 +49,15 @@ model, and the languages do not change. Only the protocol spoken across the
 interface changes. The interface between components should be kept narrow and
 explicit so that this migration remains a contained operation if it is required.
 
-Other protocols: JSON-RPC, MessagePack-RPC, Thrift, ZeroMQ, and raw TCP with a
-custom protocol are all technically viable but offer no advantage over HTTP at
+**Other protocols**: JSON-RPC, MessagePack-RPC, Thrift, ZeroMQ, and raw TCP with
+a custom protocol are all technically viable but offer no advantage over HTTP at
 this scale that justifies deviating from the most familiar and well-supported
 option. ZeroMQ has a following in scientific computing contexts and is noted as
 a candidate if the project develops internal data pipeline requirements that do
 not fit the request-response model, but it is not appropriate as the primary
 communication protocol at this stage.
 
-RATIONALE
+## RATIONALE
 
 HTTP is the protocol with the widest library support, the most familiar
 debugging tools, and the lowest barrier to contribution. The Go standard library
@@ -73,20 +71,20 @@ observed performance bottleneck attributable to the protocol, and the
 appropriate time to pay gRPC's toolchain cost is when that bottleneck appears
 and is measured.
 
-CONSEQUENCES
+## CONSEQUENCES
 
-Positive: inter-process communication is immediately debuggable with standard
-tools. Contributors need no protocol-specific knowledge beyond HTTP. The
-interface is introspectable without specialised tooling. No code generation step
-is required.
+**Positive**: inter-process communication is immediately debuggable with
+standard tools. Contributors need no protocol-specific knowledge beyond HTTP.
+The interface is introspectable without specialised tooling. No code generation
+step is required.
 
-Negative: HTTP header overhead is proportionally higher for small frequent calls
-than for infrequent calls with heavy payloads. gRPC's HTTP/2 framing is more
-efficient for high-frequency inter-service communication, and if call frequency
-grows significantly this difference may become observable.
+**Negative**: HTTP header overhead is proportionally higher for small frequent
+calls than for infrequent calls with heavy payloads. gRPC's HTTP/2 framing is
+more efficient for high-frequency inter-service communication, and if call
+frequency grows significantly this difference may become observable.
 
-Neutral: the interface between the Go application server and the Python engine
-should be kept narrow and explicit so that a migration to gRPC remains a bounded
-operation if HTTP proves insufficient. If the project migrates to a multi-host
-orchestrator, the assumptions underlying this decision change and the protocol
-choice should be reconsidered at that point.
+**Neutral**: the interface between the Go application server and the Python
+engine should be kept narrow and explicit so that a migration to gRPC remains a
+bounded operation if HTTP proves insufficient. If the project migrates to a
+multi-host orchestrator, the assumptions underlying this decision change and the
+protocol choice should be reconsidered at that point.
