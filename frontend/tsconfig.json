@@ -1,13 +1,13 @@
 {
     "//": "tsconfig.json required to configure TypeScript for Astro, React",
-    "//": "see 2026-04-26-typescript-as-frontend-language.txt",
+    "//": "see 2026-04-26-typescript-as-frontend-language",
 
     "//": "required by Astro",
-    "//": "see 2026-04-18-astro-as-frontend-framework.txt",
+    "//": "see 2026-04-18-astro-as-frontend-framework",
     "extends": "astro/tsconfigs/strict",
 
     "//": "required by React which in turn requires JSX",
-    "//": "see 2026-04-18-react-as-frontend-component-library.txt",
+    "//": "see 2026-04-18-react-as-frontend-component-library",
     "compilerOptions": {
         "jsx": "react-jsx",
         "jsxImportSource": "react"

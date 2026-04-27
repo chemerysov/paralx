@@ -5,7 +5,7 @@ export default defineConfig({
     integrations: [react()],
 
     // pre-built HTML (with support for interactive islands)
-    // see 2026-04-16-hybrid-as-frontend-rendering.txt
+    // see 2026-04-16-hybrid-as-frontend-rendering
     output: 'static',
 
     // folder name, here 'dist/_assets/'

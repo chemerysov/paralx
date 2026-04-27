@@ -1,11 +1,11 @@
 {
     "//": "package.json is needed for the pnpm JS package manager",
-    "//": "see 2026-04-25-pnpm-as-javascript-package-manager.txt",
+    "//": "see 2026-04-25-pnpm-as-javascript-package-manager",
 
     "name": "paralx",
 
     "//": "tells Node.js to treat .js files as ESModules as required by Astro",
-    "//": "see 2026-04-18-astro-as-frontend-framework.txt",
+    "//": "see 2026-04-18-astro-as-frontend-framework",
     "type": "module",
 
     "//": "shortcut, ie 'pnpm dev' instead of './node_modules/.bin/astro dev'",
