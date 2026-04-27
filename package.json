@@ -20,6 +20,12 @@
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "astro": "^6.0.0",
-        "@astrojs/react": "^5.0.0"
+        "@astrojs/react": "^5.0.0",
+        "katex": "^0.16.0"
+    },
+
+    "//": "needed during dev and build but not in prod runtime",
+    "devDependencies": {
+        "@types/katex": "^0.16.0"
     }
 }
