@@ -1,9 +1,30 @@
 ---
-import Model from '../layouts/Model.astro';
+import Default from '../layouts/Default.astro';
 ---
 
-<Model title="Paralx" description="Transparent quantitative finance research.">
-    <h1>Paralx</h1>
-    <p>Open source transparent quantitative finance research.</p>
-    <a href="/models/keynesian-cross">Keynesian Cross</a>
-</Model>
+<Default
+    title="Paralx"
+    description="Open source project for transparent dynamic multi-disciplinary finance research."
+>
+
+    <p class="tagline">Open source project for transparent dynamic multi-disciplinary finance research.</p>
+
+    <p>
+        There exists important economic and financial research. It is often accessible, but not legible even to the motivated general audience.
+    </p>
+
+    <p>
+        Paralx slowly explains models without assumed knowledge, shows derivations and proofs, explores counterarguments, addresses prerequisites, and pulls live data so that every model is replicable and up-to-date. It is free, open source, and aims to be built across disciplines, because economic and financial outcomes do not occur in isolation from political, cultural, scientific and historical ones.
+    </p>
+
+    <p>You can learn more about the project's vision at our <a href="/about">About Paralx</a> page.</p>
+</Default>
+
+<style>
+    .tagline {
+        font-size: 1.6rem;
+        font-weight: 600;
+        line-height: 1.3;
+        margin-bottom: 32px;
+    }
+</style>
