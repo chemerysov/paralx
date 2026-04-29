@@ -1,0 +1,19 @@
+services:
+    backend:
+        # context project root because need access to frontend/
+        build:
+            context: ./
+            dockerfile: backend/Dockerfile
+        # forwards server ports to the corresponding backend service ports
+        ports:
+            - "80:80"
+            - "443:443"
+        # persists Let's Encrypt certificates across container restarts
+        volumes:
+            - certs:/certs
+        # not always to allow for docker compose stop
+        restart: unless-stopped
+
+# declares that cert needs to be created and managed by docker on the server
+volumes:
+    certs:

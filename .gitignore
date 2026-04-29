@@ -1,9 +1,10 @@
-# as per 2026-04-09-any-editor-as-editor-policy.txt
+# see 2026-04-09-any-editor-as-editor-policy
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
-!.vscode/tasks.json
-!.vscode/launch.json
 
-node_modules
-.astro/
+frontend/node_modules/
+frontend/.astro/
+frontend/dist/
+
+backend/paralx
