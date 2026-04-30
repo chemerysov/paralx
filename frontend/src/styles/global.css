@@ -10,13 +10,14 @@
 html {
     /* redundancy for safety on edge cases */
     background: #f8f8f6;
+    font-size: 18px;
 }
 
 body {
     background: #f8f8f6;
     color: #1a1a1a;
     font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-    font-size: 18px;
+    font-size: 1rem;
     line-height: 1.7;
     max-width: 740px;
 
