@@ -13,7 +13,13 @@ const { title, description } = Astro.props;
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- required by modern mobile browser ui -->
+    <meta name="viewport" content="
+        width=device-width,
+        initial-scale=1.0,
+        viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f8f8f6" />
     <meta name="description" content={description} />
     <title>{title}</title>
 </head>

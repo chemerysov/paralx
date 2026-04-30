@@ -1,19 +1,54 @@
 *,
 *::before,
 *::after {
+    /* width and height properties include the content, padding, and border, but do not include the margin */
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+html {
+    /* redundancy for safety on edge cases */
+    background: #f8f8f6;
+}
+
+body {
+    background: #f8f8f6;
+    color: #1a1a1a;
+    font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+    font-size: 18px;
+    line-height: 1.7;
+    max-width: 740px;
+
+    /* centers the body on a page */
+    margin-left: auto;
+    margin-right: auto;
+
+    /* so that the text is not flush against mobile screen edge */
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
 header {
+    background: #f8f8f6;
     position: sticky;
     top: 0;
-    background: #f8f8f6;
-    padding-bottom: 16px;
-    padding-top: 16px;
-    border-bottom: 1px solid #e0e0dc;
+
+    /* needed because of body's padding-left, padding-right  */
+    margin-left: -24px;
+    margin-right: -24px;
     margin-bottom: 48px;
+
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+
+    border-bottom: 1px solid #e0e0dc;
+    text-align: center;
+
+    /* redundancy for safety on edge cases */
+    z-index: 10;
 }
 
 header a {
@@ -27,16 +62,6 @@ header a {
 
 header a:hover {
     color: #1a1a1a;
-}
-
-body {
-    background: #f8f8f6;
-    color: #1a1a1a;
-    font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-    font-size: 18px;
-    line-height: 1.7;
-    max-width: 740px;
-    margin: 0 auto;
 }
 
 footer {
