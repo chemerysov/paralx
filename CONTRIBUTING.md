@@ -1,5 +1,7 @@
 # Contributing
 
+Paralx is open source and welcomes contributions.
+
 ## Prerequisites
 
 **Node.js 22.0.0+**
@@ -16,11 +18,24 @@ npm install -g pnpm
 
 ## Setup
 
-Install dependencies:
+Install frontend dependencies:
 
 ```bash
+cd frontend
 pnpm install
 ```
+
+## Development
+
+Start the frontend development server:
+
+```bash
+cd frontend
+pnpm dev
+```
+
+The dev server starts with hot module replacement, meaning changes to pages,
+layouts, components, and styles reflect in the browser immediately.
 
 ## Appendix
 
