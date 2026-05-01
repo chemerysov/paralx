@@ -13,30 +13,129 @@ import Math from '../../components/Math.astro';
     <h1>Keynesian Cross</h1>
 
     <section>
-        <h2>The accounting foundation</h2>
-        <p>
-            Gross domestic product is the sum of all expenditures
-            in an economy:
-        </p>
-        <Math formula="Y = C + I + G + X - M" display={true} />
-        <p>
-            Where <Math formula="C" /> is consumption,
-            <Math formula="I" /> is investment,
-            <Math formula="G" /> is government spending,
-            and <Math formula="X - M" /> is net exports.
-        </p>
-    </section>
+        <h2>Gross Domestic Product</h2>
 
-    <section>
-        <h2>Equilibrium</h2>
         <p>
-            Equilibrium output is autonomous expenditure times
-            the Keynesian multiplier:
+            The exact wording of the definition of gross domestic product varies across institutions. But the core condensed definition is often as follows:
         </p>
+
+        <dl>
+            <dt>gross domestic product</dt>
+            <dd>total monetary value of all final goods and services produced within a country's borders over a given period of time</dd>
+        </dl>
+
+        <details>
+            <summary>What are some of the institutional definitions?</summary>
+            <blockquote>
+                <p>
+                    Gross domestic product (GDP) measures the value of final goods and services produced within the United States. Also known as value added, GDP is the value of goods and services produced by private industry and government, less the value of goods and services used up in production. GDP is also equal to the sum of personal consumption expenditures, gross private domestic investment, net exports of goods and services, and government consumption expenditures and gross investment.
+                </p>
+                <cite>&ndash; <a href="https://www.bea.gov/help/glossary/gross-domestic-product-gdp">The United States Bureau of Economic Analysis</a>; page last modified August 11, 2023</cite>
+            </blockquote>
+            <blockquote>
+                <p>
+                    GDP measures the monetary value of final goods and services—that is, those that are bought by the final user—produced in a country in a given period of time (say a quarter or a year). It counts all of the output generated within the borders of a country. GDP is composed of goods and services produced for sale in the market and also includes some nonmarket production, such as defense or education services provided by the government.
+                </p>
+                <cite>&ndash; <a href="https://www.imf.org/en/publications/fandd/issues/series/back-to-basics/gross-domestic-product-gdp">International Monetary Fund</a>; page accessed April 30, 2026</cite>
+            </blockquote>
+            <blockquote>
+                <p>
+                    Gross domestic product (GDP) is the standard measure of the value added created through the production of goods and services in a country during a certain period. Consequently, GDP also measures the income earned from that production, or the total amount spent on final goods and services (less imports).
+                </p>
+                <cite>&ndash; <a href="https://www.oecd.org/en/data/indicators/nominal-gross-domestic-product-gdp.html">Organisation for Economic Co-operation and Development</a>; page accessed April 30, 2026</cite>
+            </blockquote>
+        </details>
+
+        <details>
+            <summary>What does every part of the definition mean exactly?</summary>
+            <p>
+                <strong>Total monetary value.</strong> An economy produces an enormous variety of things: cars, surgical procedures, legal consultations, loaves of bread, software. These things are not naturally comparable to one another, and there is no obvious way to add them together into a single number. Money, specifically market prices, is the device that makes this addition possible. Each good or service gets converted into its price, and those prices, being all in the same units, can then be summed. GDP is therefore not a count of things produced; it is a sum of the monetary values of things produced.
+            </p>
+            <p>
+                <strong>Final.</strong> Not every monetary transaction is counted. When a steel manufacturer sells steel to a car manufacturer, and the car manufacturer then sells a car to a consumer, only the car sale enters GDP. The steel is an intermediate good, meaning it is a step along the way to producing something else rather than something consumed for its own sake. If both transactions were counted, the value of the steel would appear twice: once when sold to the car manufacturer, and again embedded in the price of the finished car. GDP restricts itself to goods and services purchased by their ultimate users in order to avoid this double-counting.
+            </p>
+            <p>
+                <strong>Goods and services.</strong> GDP counts both physical objects and intangible acts of provision. A manufactured car is a good; a legal consultation, a haircut, a hospital visit are services. The distinction matters practically because modern economies have shifted heavily toward services, but both categories enter GDP the same way, through the monetary value exchanged at the point of final sale.
+            </p>
+            <p>
+                <strong>Produced.</strong> GDP measures production, not mere exchange. If one person sells a used car to another, no new production has occurred, and the transaction does not enter GDP. What is being measured is the creation of new value, the act of making something that did not exist before or performing a service that was not yet rendered.
+            </p>
+            <p>
+                <strong>Within a country's borders.</strong> The word domestic defines the geographic boundary of what gets counted. GDP includes all production occurring inside a country's borders regardless of who owns the enterprise doing the producing. A factory located in the United States contributes to United States GDP whether it is owned by an American company or a foreign one. What matters is where the production physically takes place, not the nationality of the producer.
+            </p>
+            <p>
+                <strong>Over a given period of time.</strong> GDP is a flow, not a stock. It does not measure how much wealth exists at a particular moment; it measures how much productive activity occurred across a stretch of time, typically a calendar year or a fiscal quarter. A country's accumulated wealth could be enormous while its GDP in a given year is modest, or the reverse. The time dimension is not incidental; it is what makes GDP a measure of economic activity rather than economic magnitude.
+            </p>
+        </details>
+
+        <details>
+            <summary>What are some criticisms of every part of the definition? What are some related metrics attempting to address some of the criticisms?</summary>
+            <p>
+                <strong>Total monetary value.</strong> Using market prices as the universal conversion device means that anything without a market price is invisible to GDP. For example, unpaid domestic labor, subsistance farming, volunteer work is entirely excluded. Additionally, market prices reflect what things cost, not what they are worth in any broader sense. A barrel of oil extracted and burned enters GDP positively; the environmental damage it causes does not subtract from it, but the money spent cleaning up an oil spill does enter GDP positively. A counterargument is that GDP was never designed to measure welfare or sustainability; it was designed to measure market output, and criticizing it for not measuring what it was not built to measure may be asking the wrong question of the right tool. The Genuine Progress Indicator, or GPI, is one attempt to correct for this, adding the value of unpaid work and subtracting costs of crime, pollution, and inequality. The Human Development Index, produced by the United Nations, departs further, incorporating life expectancy and education outcomes alongside income.
+            </p>
+            <p>
+                <strong>Final.</strong> The distinction between final and intermediate is not clear once you consider expenditures that produce services over long stretches of time. Government expenditure on infrastructure, roads, bridges, ports, enters GDP as final expenditure in the year of construction, but infrastructure is in an important sense an intermediate input into all the private production that depends on it across the decades of its useful life. A trucking company's revenue enters GDP each year, but the road the truck drives on is counted as final in the year it was built. Consumer durables carry the same structure: a car purchased by a household enters GDP entirely in the year of purchase, but the transportation service it provides accrues across ten or fifteen years of use. A counterargument is that present value reasoning justifies the lump-sum treatment, that a purchase price in a functioning market reflects the discounted value of all future services the asset will provide, and so counting the full price at point of purchase is not obviously wrong. The difficulty is that GDP is also used as a high-frequency indicator of economic conditions, and the timing of when expenditures are recorded matters for detecting recessions and recoveries.
+            </p>
+            <p>
+                <strong>Goods and services.</strong> The category of what counts as a good or service has a production boundary that excludes large swaths of human activity. Leisure time is not counted, even though most people would consider having more of it an improvement in their circumstances. William Nordhaus and James Tobin proposed a Measure of Economic Welfare in 1972 that attempted to add the value of leisure and subtract what they called disamenities, the costs of urbanization, commuting, and pollution, from a GDP-like aggregate. The counterargument is that valuing leisure time introduces substantial methodological difficulties: leisure means different things to different people, its value is highly subjective, and any imputed price for it would be largely stipulated rather than observed. GDP's restriction to market transactions, whatever its limitations, at least rests on observable data.
+            </p>
+            <p>
+                <strong>Produced.</strong> GDP's focus on production means it is indifferent to whether what is produced is useful, harmful, or merely defensive. Military expenditure enters GDP the same way as hospital construction. The cost of incarcerating people enters GDP. So does the cost of treating preventable diseases. These are sometimes called defensive expenditures, and GDP counts them as straightforwardly positive contributions to output. There is also the question of quality versus quantity: GDP captures the monetary value of production but not improvements in the quality of goods at a given price, a problem that becomes acute with digital goods and services, many of which are provided at zero monetary cost to the consumer and therefore contribute little or nothing to measured GDP despite being widely used and highly valued. The counterargument on defensive expenditures is that distinguishing productive from defensive spending requires normative judgments about what counts as a social problem and what counts as a genuine good, judgments that a statistical measure arguably should not be making.
+            </p>
+            <p>
+                <strong>Within a country's borders.</strong> The geographic criterion produces significant distortions in countries with large foreign ownership of domestic production. Ireland is the most frequently cited example: multinational corporations, particularly American technology and pharmaceutical firms, book outsized profits through Irish subsidiaries for the purposes of minimizing taxes, inflating Irish GDP, with a reduced relation to the material living standards of Irish residents. The Irish government began emphasizing modified gross national income, or GNI, as a more meaningful indicator of domestic economic activity. More broadly, gross national income addresses part of this by switching from a geographic to a nationality-based criterion, counting income earned by a country's residents regardless of where production physically takes place. A separate issue is purchasing power parity, or PPP, adjustment, which does not change the domestic versus national distinction but corrects for the fact that a dollar of GDP in one country does not buy the same quantity of goods as a dollar of GDP in another, making raw GDP comparisons across countries misleading. The counterargument is that knowing the total value of production occurring within a territory is precisely what is useful, and alternative measures like GNI introduce their own complications around how to attribute the income of multinational firms operating across many jurisdictions.
+            </p>
+            <p>
+                <strong>Over a given period of time.</strong> Measuring a flow over a period says little about whether that flow is sustainable. A country can post high GDP in a given year by liquidating its natural resources, running down its infrastructure, or accumulating debt, activities that increase current output while depleting the stock of assets that future output depends on. GDP has no mechanism for registering this depletion. The World Bank's adjusted net savings measure, sometimes called genuine savings, attempts to correct for this by subtracting the depletion of natural capital and the damage from pollution, and adding investment in human capital. The counterargument on sustainability is that GDP was designed as a measure of current output, not a balance sheet of national wealth, and that tracking the depletion of natural and physical capital is a legitimate and important endeavor but a separate one, better addressed by complementary measures than by modifying GDP itself.
+            </p>
+        </details>
+
+        <p>
+            GDP is not only a measure of output. The same quantity can be arrived at from three directions, each of which reflects a different economic reality:
+        </p>
+
         <Math
-            formula="Y^* = \frac{AE}{1 - \text{MPC}} = \frac{AE}{\text{MPS}}"
+            formula="Y:=Y_{\\text{production}}=Y_{\\text{expenditure}}=Y_{\\text{income}}"
             display={true}
         />
+
+        <p>
+            Where <Math formula="Y" /> is GDP; <Math formula="Y_{\\text{production}}" /> is GDP measured as the sum of value added at each stage of production across all industries, counting only the new value created at each step to avoid double-counting intermediate goods; <Math formula="Y_{\\text{expenditure}}" /> is GDP measured as the total spending on final goods and services by households, firms, governments, and foreign buyers net of imports; and <Math formula="Y_{\\text{income}}" /> is GDP measured as the total income earned in the course of that production, including wages, profits, rents, and interest.
+        </p>
+
+        <details>
+            <summary>Why is GDP denoted <Math formula="Y" />?</summary>
+            <p>
+                The honest answer is that nobody knows with certainty. Greg Mankiw, whose macroeconomics textbook is among the most widely  used in the world, has noted that he cannot trace the origin of the convention and has solicited explanations from readers without receiving a definitive one. The earliest use found was in Michał Kalecki's 1937 work, where it appears as <Math formula="Y=f(I)" />, income as a function of investment. The first formalizations of the IS-LM model that same year, by Hicks, Harrod, and Meade, used <Math formula="I" /> for national income instead. Cobb and Douglas in 1928 used <Math formula="P" /> for production. The letter <Math formula="I" /> was eventually claimed by investment, leaving income without its natural initial. Some suggest Y stands for yield, a plausible mnemonic, but the word yield does not appear in standard usage to describe GDP. Others suggest it simply inherited the role of the generic dependent variable in the <Math formula="y = f(x)" /> convention of applied mathematics. The convention is old enough that its origin has been lost, which is perhaps fitting for a variable that itself aggregates an enormous amount of complexity into a single letter.
+            </p>
+        </details>
+
+        <details>
+            <summary>What exactly does each approach measure and why?</summary>
+            <p>
+                <strong>The production approach</strong> measures GDP by summing the value added at each stage of production across every industry in the economy. Value added, at any given stage, is the difference between the revenue a producer earns from selling its output and the cost of the intermediate inputs it purchased to produce that output. A steel mill buys iron ore and energy, produces steel, and its value added is the difference between what it sells the steel for and what it paid for the ore and energy. Summing value added rather than total revenue is what prevents double-counting: the value of the iron ore is already embedded in the price of the steel, and summing both would count it twice. This approach is particularly useful for understanding the structure of an economy, which industries are growing, which are contracting, and how production is distributed across sectors.
+            </p>
+            <p>
+                <strong>The expenditure approach</strong> measures GDP by summing all spending on final goods and services over the period. It is the most commonly cited formulation and produces the expenditure identity, which decomposes GDP into four categories of spending: household consumption, private investment, government expenditure, and net exports, meaning exports minus imports. Imports are subtracted because they represent spending on goods produced outside the country's borders, which should not enter a measure of domestic production. This approach is useful because it reveals the demand side of the economy, showing which categories of spending are driving growth or contraction in a given period. We will look closely at this approach shortly.
+            </p>
+            <p>
+                <strong>The income approach</strong> measures GDP by summing all income earned in the course of producing the economy's output over the period. This includes wages paid to workers, profits earned by firms, rents earned by landowners, and interest earned by holders of capital. The logic is that every dollar of output produced must, by accounting necessity, become a dollar of income for someone: the revenue a firm earns from selling its output flows out as wages, rent, interest, and profit. This approach is useful for understanding the distribution of the economy's output across different types of income earners, and it is the basis for national income accounting, which tracks how the total product of the economy is divided between labor and capital.
+            </p>
+        </details>
+
+        <details>
+            <summary>Why exactly are they equal?</summary>
+            <p>
+                The equality between the production and expenditure measures is definitional. Expenditure in the national accounts is defined to include not only purchases by final buyers but also unsold inventory, which is recorded as investment expenditure by the firm that produced it. With inventory treated this way, every unit of output is by definition matched by an equal unit of expenditure. The equality does not follow from how the economy behaves; it follows from the decision to define expenditure so that it covers the entirety of output.
+            </p>
+            <p>
+                The equality between the expenditure and income measures is equally definitional. Income in the national accounts is defined as the sum of all payments made to factors of production: wages, rent, interest, and profit. These categories are defined to be exhaustive, meaning every dollar of revenue a firm receives from selling its output is defined to flow out as one of these payment types. Given these definitions, every dollar of expenditure on final output is by definition a dollar of income for some factor of production.
+            </p>
+            <p>
+                The three-way equality is therefore an accounting identity rather than an equation. An equation asserts that two independently derived quantities happen to be equal; an identity asserts that two expressions are different ways of writing the same thing. <Math formula="Y_{\\text{production}} = Y_{\\text{expenditure}} = Y_{\\text{income}}" /> holds because output, expenditure, and income are defined such that they must refer to the same underlying quantity, not because the economy behaves in a particular way. In practice, the three measures do produce slightly different numbers when estimated from real data, due to measurement error and the imperfections of statistical collection, but the discrepancy is treated as a residual error rather than evidence against the identity.
+            </p>
+        </details>
+
     </section>
 
 </article>
