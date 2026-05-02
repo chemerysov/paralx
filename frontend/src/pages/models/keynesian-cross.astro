@@ -47,7 +47,7 @@ import Math from '../../components/Math.astro';
         </details>
 
         <details>
-            <summary>What does every part of the definition mean exactly?</summary>
+            <summary>What does every part of the definition mean?</summary>
             <p>
                 <strong>Total monetary value.</strong> An economy produces an enormous variety of things: cars, surgical procedures, legal consultations, loaves of bread, software. These things are not naturally comparable to one another, and there is no obvious way to add them together into a single number. Money, specifically market prices, is the device that makes this addition possible. Each good or service gets converted into its price, and those prices, being all in the same units, can then be summed. GDP is therefore not a count of things produced; it is a sum of the monetary values of things produced.
             </p>
@@ -69,7 +69,7 @@ import Math from '../../components/Math.astro';
         </details>
 
         <details>
-            <summary>What are some criticisms of every part of the definition? What are some related metrics attempting to address some of the criticisms?</summary>
+            <summary>What are some criticisms of every part of the definition?</summary>
             <p>
                 <strong>Total monetary value.</strong> Using market prices as the universal conversion device means that anything without a market price is invisible to GDP. For example, unpaid domestic labor, subsistance farming, volunteer work is entirely excluded. Additionally, market prices reflect what things cost, not what they are worth in any broader sense. A barrel of oil extracted and burned enters GDP positively; the environmental damage it causes does not subtract from it, but the money spent cleaning up an oil spill does enter GDP positively. A counterargument is that GDP was never designed to measure welfare or sustainability; it was designed to measure market output, and criticizing it for not measuring what it was not built to measure may be asking the wrong question of the right tool. The Genuine Progress Indicator, or GPI, is one attempt to correct for this, adding the value of unpaid work and subtracting costs of crime, pollution, and inequality. The Human Development Index, produced by the United Nations, departs further, incorporating life expectancy and education outcomes alongside income.
             </p>
@@ -95,7 +95,7 @@ import Math from '../../components/Math.astro';
         </p>
 
         <Math
-            formula="Y:=Y_{\\text{production}}=Y_{\\text{expenditure}}=Y_{\\text{income}}"
+            formula="Y=Y_{\\text{production}}=Y_{\\text{expenditure}}=Y_{\\text{income}}"
             display={true}
         />
 
@@ -111,7 +111,7 @@ import Math from '../../components/Math.astro';
         </details>
 
         <details>
-            <summary>What exactly does each approach measure and why?</summary>
+            <summary>What does each approach measure and why?</summary>
             <p>
                 <strong>The production approach</strong> measures GDP by summing the value added at each stage of production across every industry in the economy. Value added, at any given stage, is the difference between the revenue a producer earns from selling its output and the cost of the intermediate inputs it purchased to produce that output. A steel mill buys iron ore and energy, produces steel, and its value added is the difference between what it sells the steel for and what it paid for the ore and energy. Summing value added rather than total revenue is what prevents double-counting: the value of the iron ore is already embedded in the price of the steel, and summing both would count it twice. This approach is particularly useful for understanding the structure of an economy, which industries are growing, which are contracting, and how production is distributed across sectors.
             </p>
@@ -124,7 +124,7 @@ import Math from '../../components/Math.astro';
         </details>
 
         <details>
-            <summary>Why exactly are they equal?</summary>
+            <summary>Why are they equal?</summary>
             <p>
                 The equality between the production and expenditure measures is definitional. Expenditure in the national accounts is defined to include not only purchases by final buyers but also unsold inventory, which is recorded as investment expenditure by the firm that produced it. With inventory treated this way, every unit of output is by definition matched by an equal unit of expenditure. The equality does not follow from how the economy behaves; it follows from the decision to define expenditure so that it covers the entirety of output.
             </p>
@@ -136,6 +136,89 @@ import Math from '../../components/Math.astro';
             </p>
         </details>
 
+        <p>
+            The expenditure approach, which defines <Math formula="Y" /> as the sum of all spending on final goods and services, can be decomposed into five categories. This decomposition is the expenditure identity:
+        </p>
+
+        <Math
+            formula='Y=C+I+G+X-M'
+            display={true}
+        />
+
+        <p>
+            Where <Math formula="C" /> is household consumption expenditure; <Math formula="I" /> is private investment, meaning spending by firms on capital goods such as machinery, equipment, and structures, as well as changes in business inventories; <Math formula="G" /> is government consumption expenditure and gross investment; <Math formula="X" /> is exports, meaning spending by foreign buyers on domestically produced goods and services; and <Math formula="M" /> is imports, meaning spending by domestic buyers on foreign-produced goods and services.
+        </p>
+
+        <details>
+            <summary>How is every category defined?</summary>
+            <p>
+                <strong>Consumption (<Math formula="C" />)</strong> covers all spending by households on final goods and services. This includes durable goods such as vehicles and appliances, non-durable goods such as food and clothing, and services such as healthcare, education, and housing. Owner-occupied housing is a notable case: rather than counting the purchase of a home as consumption, national accounts treat it as investment and impute a rental value to it each period, counting that imputed rent as consumption of housing services. Consumption is typically the largest component of GDP in developed economies.
+            </p>
+            <p>
+                <strong>Investment (<Math formula="I" />)</strong> covers spending by firms on capital goods, meaning goods that are not consumed immediately but used to produce other goods and services over time. This includes machinery, equipment, software, and the construction of new structures. It also includes residential construction, meaning the building of new homes, which is treated as investment rather than consumption regardless of whether the buyer intends to live in the property or rent it out. A less intuitive inclusion is the change in business inventories: goods produced but not yet sold are counted as investment by the producing firm, which is what ensures the accounting identity between production and expenditure holds.
+            </p>
+            <p>
+                <strong>Government expenditure (<Math formula="G" />)</strong> covers spending by all levels of government on goods and services, including public sector wages, procurement of equipment, and construction of infrastructure. It does not include transfer payments such as pensions, unemployment benefits, or subsidies, because these are not payments for goods or services produced; they are redistributions of income from the government to households, and the spending they enable is captured when the recipient households spend the money, entering GDP as consumption.
+            </p>
+            <p>
+                <strong>Exports (<Math formula="X" />)</strong> covers spending by foreign buyers on goods and services produced domestically. When a German firm purchases American machinery, or a British tourist pays for a hotel in New York, those transactions represent demand for domestically produced output and are added to GDP. Exports are added because they represent production that occurred within the country's borders, demand for which originated outside them.
+            </p>
+            <p>
+                <strong>Imports (<Math formula="M" />)</strong> covers spending by domestic buyers on goods and services produced abroad. Imports are subtracted because the categories <Math formula="C" />, <Math formula="I" />, and <Math formula="G" /> are measured as total domestic spending, which includes spending on foreign-produced goods. A household buying a Japanese car contributes to <Math formula="C" /> as measured, but that car was not produced domestically and should not enter a measure of domestic output. Subtracting <Math formula="M" /> corrects for this: the net effect of the <Math formula="X - M" /> term is to add foreign demand for domestic production and remove domestic demand for foreign production, leaving only spending on goods and services that were actually produced within the country's borders.
+            </p>
+        </details>
+    </section>
+
+    <section>
+        <h2>Keynesian Cross Assumptions</h2>
+
+        <p>
+            The Keynesian Cross model introduces a set of assumptions. The first concerns investment. In the expenditure identity, <Math formula="I" /> includes both intentional capital expenditure and unintentional inventory accumulation. The Keynesian Cross splits these apart:
+        </p>
+
+        <Math
+            formula='I=I_{\\text{planned}}+I_{\\text{unplanned}}'
+            display={true}
+        />
+
+        <p>
+            Where <Math formula="I_{\\text{planned}}" /> is the investment firms intend to make, the deliberate purchase of capital goods and the conscious decision to build inventories. <Math formula="I_{\\text{unplanned}}" /> is the inventory change that occurs not by design but as a residual: when households buy less than firms expected, unsold goods accumulate as unplanned inventory investment; when households buy more than firms expected, inventories are drawn down, producing negative unplanned investment.
+        </p>
+
+        <details>
+            <summary>What are some criticisms of the planned vs unplanned investment split assumption?</summary>
+            <p>
+                The distinction between planned and unplanned investment can be unclear. In the model, unplanned investment is restricted to inventory accumulation, but it is unlikely that inventory is the only investment category subject to surprise. A firm that ordered machinery based on a demand forecast that turned out to be wrong has also made investment that, in retrospect, was miscalibrated to actual conditions, which would in some sense be unplanned capital goods. More broadly, firms probably do not operate with a binary of planned versus unplanned; what is more likely is forecasts, confidence intervals, and contingency buffers, meaning some inventory buildup in any period is anticipated as a statistical possibility even if the precise quantity is not. The defense of the simplification is that treating the inventory residual as the bearer of all expectational error is a clean way to close the accounting identity while preserving a mechanism for disequilibrium, even if it overstates the neatness of the underlying firm-level reality.
+            </p>
+            <p>
+                The split also depends implicitly on a discrete time period, typically a quarter or a year, within which planning occurs and outcomes are observed. But firms observe inventory signals continuously, not once per period. Unplanned accumulation in the first weeks of a quarter might prompt production adjustments before the quarter closes, meaning what registers as unplanned in the aggregate accounts may already be partially corrected for within the period the model treats as a single unit. The defense is that all period models share this limitation and that the discrete period is a deliberate abstraction. However, this abstraction is more costly here than in some other models, because the adjustment mechanism of the Keynesian Cross depends specifically on firms reading inventory signals and responding.
+            </p>
+            <p>
+                What the planned/unplanned split is really tracking, beneath the inventory accounting, is something like the gap between expected demand and realized demand. Firms produce based on a forecast; actual sales either confirm or contradict it; the difference lands in inventories. The model encodes this expectational error as a residual rather than modeling the expectation formation process explicitly. This means the model has nothing to say about how expectations are formed, how they are revised in response to new information, or how the variance of demand across periods affects firm behavior. The defense is that the Keynesian Cross is an entry-level framework and that modeling expectations explicitly is a substantial additional complexity with its own unresolved debates. However, the planned/unplanned split is where that omission is perhaps most consequential, since the entire adjustment mechanism of the model rests on a process of firms inferring the state of demand from inventory signals.
+            </p>
+            <p>
+                There is also a physical constraint the model does not acknowledge. Unplanned inventory depletion cannot exceed the stock on hand at the beginning of the period; a firm cannot sell from empty shelves. Accumulation is bounded above by available storage capacity. These bounds mean that the adjustment mechanism the model relies upon operates within constraints it does not represent. Beyond some threshold of depletion, the signal is not a gradual inventory drawdown but a stockout, which carries different and more disruptive implications for both the firm and its customers. The defense is that under normal economic conditions these bounds are not binding, and a model of typical fluctuations around equilibrium need not account for corner cases. However, this concedes that this model is not a good fit for modelling serious shortages or considerable overproduction.
+            </p>
+            <p>
+                A more fundamental constraint is that the inventory adjustment mechanism only applies to goods that can be physically stored. Services cannot be inventoried. When demand for a haircut, a legal consultation, or a hospital visit falls short of what a firm anticipated, there is no accumulation of unsold output; the service simply does not occur and the revenue is lost. When demand exceeds expectations, the firm cannot draw down a reserve of pre-produced services; it either turns customers away or stretches capacity. The defense is that the Keynesian Cross was developed in an era when goods production was a substantially larger share of economic output, and that the model's assumptions were more defensible in that context. However, this concedes that this model is not a good fit for modelling service economies.
+            </p>
+        </details>
+
+        <p>Substituting this split back into the GDP expenditure identity replaces the single investment term with its two components:</p>
+
+        <Math
+            formula="Y=C+I_{\\text{planned}}+I_{\\text{unplanned}}+G+X-M"
+            display={true}
+        />
+
+        <p>
+            The second assumption concerns consumption (<Math formula="C" />). Here the Keynesian Cross makes a behavioral claim: that aggregate consumption (<Math formula="C" />) moves with aggregate income (<Math formula="Y" />). Households that receive more income spend more; households that receive less spend less. The model does not yet specify the precise form of this relationship, but the foundational assumption is the proportionality itself:
+        </p>
+
+        <Math
+            formula='C\\sim Y'
+            display={true}
+        />
     </section>
 
 </article>
