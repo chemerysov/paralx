@@ -3,8 +3,16 @@
 !.vscode/settings.json
 !.vscode/extensions.json
 
+# modules and compiled data, docker compose recompiles
 frontend/node_modules/
 frontend/.astro/
 frontend/dist/
 
+# compiled binary, docker compose recompiles
 backend/paralx
+
+# environment secrets
+.env
+
+# macOS finder file
+.DS_Store

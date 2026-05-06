@@ -1,31 +1,24 @@
 {
-    "//": "package.json is needed for the pnpm JS package manager",
-    "//": "see 2026-04-25-pnpm-as-javascript-package-manager",
-
+    "//": "needed during dev and build but not in prod runtime",
     "name": "paralx",
-
-    "//": "tells Node.js to treat .js files as ESModules as required by Astro",
-    "//": "see 2026-04-18-astro-as-frontend-framework",
     "type": "module",
-
-    "//": "shortcut, ie 'pnpm dev' instead of './node_modules/.bin/astro dev'",
     "scripts": {
         "dev": "astro dev",
         "build": "astro build",
         "preview": "astro preview"
     },
-
-    "//": "chooses latest stable compatible under this major version",
     "dependencies": {
-        "react": "^19.0.0",
-        "react-dom": "^19.0.0",
-        "astro": "^6.0.0",
         "@astrojs/react": "^5.0.0",
-        "katex": "^0.16.0"
+        "astro": "^6.0.0",
+        "d3": "^7.9.0",
+        "katex": "^0.16.0",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
     },
-
-    "//": "needed during dev and build but not in prod runtime",
     "devDependencies": {
-        "@types/katex": "^0.16.0"
+        "@types/d3": "^7.4.3",
+        "@types/katex": "^0.16.0",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3"
     }
 }

@@ -1,6 +1,7 @@
 ---
 import Default from '../../layouts/Default.astro';
 import Math from '../../components/Math.astro';
+import GDPChart from '../../components/GDPChart';
 ---
 
 <Default
@@ -98,6 +99,12 @@ import Math from '../../components/Math.astro';
             formula="Y=Y_{\\text{production}}=Y_{\\text{expenditure}}=Y_{\\text{income}}"
             display={true}
         />
+
+        <p>
+            The chart below shows United States real gross domestic product from 1947 to the present, measured in billions of chained 2017 dollars and seasonally adjusted at an annual rate. The data is sourced from the Federal Reserve Bank of St. Louis.
+        </p>
+
+        <GDPChart client:visible />
 
         <p>
             Where <Math formula="Y" /> is GDP; <Math formula="Y_{\\text{production}}" /> is GDP measured as the sum of value added at each stage of production across all industries, counting only the new value created at each step to avoid double-counting intermediate goods; <Math formula="Y_{\\text{expenditure}}" /> is GDP measured as the total spending on final goods and services by households, firms, governments, and foreign buyers net of imports; and <Math formula="Y_{\\text{income}}" /> is GDP measured as the total income earned in the course of that production, including wages, profits, rents, and interest.
@@ -204,7 +211,9 @@ import Math from '../../components/Math.astro';
             </p>
         </details>
 
-        <p>Substituting this split back into the GDP expenditure identity replaces the single investment term with its two components:</p>
+        <p>
+            Substituting this split back into the GDP expenditure identity replaces the single investment term with its two components:
+        </p>
 
         <Math
             formula="Y=C+I_{\\text{planned}}+I_{\\text{unplanned}}+G+X-M"
