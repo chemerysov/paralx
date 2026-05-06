@@ -13,3 +13,6 @@ backend/paralx
 
 # environment secrets
 .env
+
+# macOS finder file
+.DS_Store
