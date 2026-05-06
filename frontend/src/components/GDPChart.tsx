@@ -93,7 +93,7 @@ export default function GDPChart() {
             ctx.textAlign = "right";
             ctx.textBaseline = "middle";
             yTicks.forEach(tick => {
-                const y = yScale(tick);
+                const y = Math.round(yScale(tick));
                 ctx.beginPath();
                 ctx.moveTo(0, y);
                 ctx.lineTo(innerWidth, y);
@@ -121,7 +121,7 @@ export default function GDPChart() {
             ctx.textAlign = "center";
             ctx.textBaseline = "top";
             xTicks.forEach(tick => {
-                const x = xScale(tick);
+                const x = Math.round(xScale(tick));
                 ctx.beginPath();
                 ctx.moveTo(x, innerHeight);
                 ctx.lineTo(x, innerHeight + 4);
