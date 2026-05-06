@@ -3,12 +3,31 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"golang.org/x/crypto/acme/autocert"
 )
 
 func main() {
+	fredAPIKey := os.Getenv("FRED_API_KEY")
+	if fredAPIKey == "" {
+		log.Fatal("FRED_API_KEY environment variable is not set")
+	}
+
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL environment variable is not set")
+	}
+
+	pool := connectDB(databaseURL)
+	defer pool.Close()
+
+	runMigrations(pool)
+
+	startScheduler(pool, fredAPIKey)
+
 	mux := http.NewServeMux()
+	mux.Handle("/api/series/", seriesHandler(pool))
 	// for file system details see backend/Dockerfile
 	mux.Handle("/", http.FileServer(http.Dir("dist")))
 
