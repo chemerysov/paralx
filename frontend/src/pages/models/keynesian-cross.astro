@@ -1,7 +1,7 @@
 ---
 import Default from '../../layouts/Default.astro';
 import Math from '../../components/Math.astro';
-import GDPChart from '../../components/GDPChart';
+import GDPChart from '../../components/Chart';
 ---
 
 <Default
@@ -101,12 +101,6 @@ import GDPChart from '../../components/GDPChart';
         />
 
         <p>
-            The chart below shows United States real gross domestic product from 1947 to the present, measured in billions of chained 2017 dollars and seasonally adjusted at an annual rate. The data is sourced from the Federal Reserve Bank of St. Louis.
-        </p>
-
-        <GDPChart client:visible />
-
-        <p>
             Where <Math formula="Y" /> is GDP; <Math formula="Y_{\\text{production}}" /> is GDP measured as the sum of value added at each stage of production across all industries, counting only the new value created at each step to avoid double-counting intermediate goods; <Math formula="Y_{\\text{expenditure}}" /> is GDP measured as the total spending on final goods and services by households, firms, governments, and foreign buyers net of imports; and <Math formula="Y_{\\text{income}}" /> is GDP measured as the total income earned in the course of that production, including wages, profits, rents, and interest.
         </p>
 
@@ -142,6 +136,12 @@ import GDPChart from '../../components/GDPChart';
                 The three-way equality is therefore an accounting identity rather than an equation. An equation asserts that two independently derived quantities happen to be equal; an identity asserts that two expressions are different ways of writing the same thing. <Math formula="Y_{\\text{production}} = Y_{\\text{expenditure}} = Y_{\\text{income}}" /> holds because output, expenditure, and income are defined such that they must refer to the same underlying quantity, not because the economy behaves in a particular way. In practice, the three measures do produce slightly different numbers when estimated from real data, due to measurement error and the imperfections of statistical collection, but the discrepancy is treated as a residual error rather than evidence against the identity.
             </p>
         </details>
+
+        <p>
+            The chart below shows United States real gross domestic product from 1947 to the present, measured in billions of chained 2017 dollars and seasonally adjusted at an annual rate. The data is sourced from the Federal Reserve Bank of St. Louis.
+        </p>
+
+        <GDPChart client:visible />
 
         <p>
             The expenditure approach, which defines <Math formula="Y" /> as the sum of all spending on final goods and services, can be decomposed into five categories. This decomposition is the expenditure identity:
