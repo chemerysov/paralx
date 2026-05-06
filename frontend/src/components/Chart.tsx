@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import {
+    useEffect,
+    useRef,
+    useState
+} from "react";
+
 import {
     scaleTime,
     scaleLinear,
@@ -18,10 +23,11 @@ interface ParsedObservation {
     value: number;
 }
 
+// d3 margin convention
 const MARGIN = { top: 20, right: 20, bottom: 36, left: 56 };
 const CSS_HEIGHT = 360;
 
-export default function GDPChart() {
+export default function Chart() {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [data, setData] = useState<ParsedObservation[]>([]);
