@@ -71,36 +71,6 @@ export default function Chart({ series }: ChartProps) {
         return () => observer.disconnect();
     }, []);
 
-    if (loading) {
-        return (
-            <div style={{
-                height: CSS_HEIGHT,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#888884",
-                fontSize: "0.9rem",
-            }}>
-                Loading
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div style={{
-                height: CSS_HEIGHT,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#888884",
-                fontSize: "0.9rem",
-            }}>
-                {error}
-            </div>
-        );
-    }
-
     const innerWidth = width - MARGIN.left - MARGIN.right;
     const innerHeight = CSS_HEIGHT - MARGIN.top - MARGIN.bottom;
 
@@ -124,7 +94,34 @@ export default function Chart({ series }: ChartProps) {
 
     return (
         <div ref={containerRef} style={{ width: "100%" }}>
-            {width > 0 && (
+
+            {loading && (
+                <div style={{
+                    height: CSS_HEIGHT,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#888884",
+                    fontSize: "0.9rem",
+                }}>
+                    Loading
+                </div>
+            )}
+
+            {error && (
+                <div style={{
+                    height: CSS_HEIGHT,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#888884",
+                    fontSize: "0.9rem",
+                }}>
+                    {error}
+                </div>
+            )}
+
+            {!loading && !error && width > 0 && (
                 <svg
                     width={width}
                     height={CSS_HEIGHT}
@@ -208,6 +205,7 @@ export default function Chart({ series }: ChartProps) {
                     </g>
                 </svg>
             )}
+
         </div>
     );
 }
