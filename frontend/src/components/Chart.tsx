@@ -27,15 +27,19 @@ interface ParsedObservation {
 const MARGIN = { top: 20, right: 20, bottom: 36, left: 56 };
 const CSS_HEIGHT = 360;
 
-export default function Chart() {
+interface ChartProps {
+    series: string;
+}
+
+export default function Chart({ series }: ChartProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [width, setWidth] = useState(0);
     const [data, setData] = useState<ParsedObservation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch("/api/series/GDPC1")
+        fetch(`/api/series/${series}`)
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
@@ -54,113 +58,18 @@ export default function Chart() {
                 setError("Failed to load data.");
                 setLoading(false);
             });
-    }, []);
+    }, [series]);
 
     useEffect(() => {
-        if (!data.length || !canvasRef.current || !containerRef.current) return;
-
-        const canvas = canvasRef.current;
-
-        const draw = () => {
-            const container = containerRef.current;
-            if (!container) return;
-
-            const dpr = window.devicePixelRatio || 1;
-            const cssWidth = container.clientWidth;
-
-            canvas.width = cssWidth * dpr;
-            canvas.height = CSS_HEIGHT * dpr;
-            canvas.style.width = cssWidth + "px";
-            canvas.style.height = CSS_HEIGHT + "px";
-
-            const ctx = canvas.getContext("2d")!;
-            ctx.scale(dpr, dpr);
-
-            const innerWidth = cssWidth - MARGIN.left - MARGIN.right;
-            const innerHeight = CSS_HEIGHT - MARGIN.top - MARGIN.bottom;
-
-            const xScale = scaleTime()
-                .domain(extent(data, d => d.date) as [Date, Date])
-                .range([0, innerWidth]);
-
-            const yScale = scaleLinear()
-                .domain([0, max(data, d => d.value) as number])
-                .nice()
-                .range([innerHeight, 0]);
-
-            ctx.clearRect(0, 0, cssWidth, CSS_HEIGHT);
-            ctx.save();
-            ctx.translate(MARGIN.left, MARGIN.top);
-
-            // y axis gridlines and tick labels
-            const yTicks = yScale.ticks(6);
-            ctx.font = "11px ui-serif, Georgia, serif";
-            ctx.fillStyle = "#888884";
-            ctx.textAlign = "right";
-            ctx.textBaseline = "middle";
-            yTicks.forEach(tick => {
-                const y = Math.round(yScale(tick));
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(innerWidth, y);
-                ctx.strokeStyle = "#e0e0dc";
-                ctx.lineWidth = 0.5;
-                ctx.stroke();
-                ctx.fillText(
-                    tick === 0 ? "0" : (tick / 1000).toFixed(0) + "k",
-                    -10,
-                    y
-                );
-            });
-
-            // x axis baseline
-            ctx.beginPath();
-            ctx.moveTo(0, innerHeight);
-            ctx.lineTo(innerWidth, innerHeight);
-            ctx.strokeStyle = "#e0e0dc";
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            // x axis tick marks and labels
-            const xTicks = xScale.ticks(timeYear.every(10)!);
-            ctx.fillStyle = "#888884";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "top";
-            xTicks.forEach(tick => {
-                const x = Math.round(xScale(tick));
-                ctx.beginPath();
-                ctx.moveTo(x, innerHeight);
-                ctx.lineTo(x, innerHeight + 4);
-                ctx.strokeStyle = "#c8c8c4";
-                ctx.lineWidth = 1;
-                ctx.stroke();
-                ctx.fillText(String(tick.getFullYear()), x, innerHeight + 8);
-            });
-
-            // data line
-            const lineGenerator = line<ParsedObservation>()
-                .x(d => xScale(d.date))
-                .y(d => yScale(d.value))
-                .context(ctx);
-
-            ctx.beginPath();
-            lineGenerator(data);
-            ctx.strokeStyle = "#1a1a1a";
-            ctx.lineWidth = 1.5;
-            ctx.lineJoin = "round";
-            ctx.stroke();
-
-            ctx.restore();
-        };
-
-        draw();
-
-        // redraw on container resize, handles window resize and
-        // orientation change on mobile
-        const observer = new ResizeObserver(draw);
-        observer.observe(containerRef.current!);
+        const container = containerRef.current;
+        if (!container) return;
+        const observer = new ResizeObserver(entries => {
+            setWidth(entries[0].contentRect.width);
+        });
+        observer.observe(container);
+        setWidth(container.clientWidth);
         return () => observer.disconnect();
-    }, [data]);
+    }, []);
 
     if (loading) {
         return (
@@ -192,9 +101,113 @@ export default function Chart() {
         );
     }
 
+    const innerWidth = width - MARGIN.left - MARGIN.right;
+    const innerHeight = CSS_HEIGHT - MARGIN.top - MARGIN.bottom;
+
+    const xScale = scaleTime()
+        .domain(extent(data, d => d.date) as [Date, Date])
+        .range([0, innerWidth]);
+
+    const yScale = scaleLinear()
+        .domain([0, max(data, d => d.value) as number])
+        .nice()
+        .range([innerHeight, 0]);
+
+    const yTicks = yScale.ticks(6);
+    const xTicks = xScale.ticks(timeYear.every(10)!);
+
+    const lineGenerator = line<ParsedObservation>()
+        .x(d => xScale(d.date))
+        .y(d => yScale(d.value));
+
+    const pathD = lineGenerator(data);
+
     return (
         <div ref={containerRef} style={{ width: "100%" }}>
-            <canvas ref={canvasRef} />
+            {width > 0 && (
+                <svg
+                    width={width}
+                    height={CSS_HEIGHT}
+                    style={{ display: "block" }}
+                >
+                    <g transform={`translate(${MARGIN.left}, ${MARGIN.top})`}>
+
+                        {/* y-axis gridlines and labels */}
+                        {yTicks.map(tick => (
+                            <g key={tick}>
+                                <line
+                                    x1={0}
+                                    y1={yScale(tick)}
+                                    x2={innerWidth}
+                                    y2={yScale(tick)}
+                                    stroke="#e0e0dc"
+                                    strokeWidth={0.5}
+                                />
+                                <text
+                                    x={-10}
+                                    y={yScale(tick)}
+                                    textAnchor="end"
+                                    dominantBaseline="middle"
+                                    fill="#888884"
+                                    fontFamily="ui-serif, Georgia, serif"
+                                    fontSize={11}
+                                >
+                                    {tick === 0
+                                        ? "0"
+                                        : (tick / 1000).toFixed(0) + "k"}
+                                </text>
+                            </g>
+                        ))}
+
+                        {/* x-axis baseline */}
+                        <line
+                            x1={0}
+                            y1={innerHeight}
+                            x2={innerWidth}
+                            y2={innerHeight}
+                            stroke="#e0e0dc"
+                            strokeWidth={1}
+                        />
+
+                        {/* x-axis tick marks and labels */}
+                        {xTicks.map(tick => (
+                            <g key={tick.getTime()}>
+                                <line
+                                    x1={xScale(tick)}
+                                    y1={innerHeight}
+                                    x2={xScale(tick)}
+                                    y2={innerHeight + 4}
+                                    stroke="#c8c8c4"
+                                    strokeWidth={1}
+                                />
+                                <text
+                                    x={xScale(tick)}
+                                    y={innerHeight + 8}
+                                    textAnchor="middle"
+                                    dominantBaseline="hanging"
+                                    fill="#888884"
+                                    fontFamily="ui-serif, Georgia, serif"
+                                    fontSize={11}
+                                >
+                                    {tick.getFullYear()}
+                                </text>
+                            </g>
+                        ))}
+
+                        {/* data line */}
+                        {pathD && (
+                            <path
+                                d={pathD}
+                                fill="none"
+                                stroke="#1a1a1a"
+                                strokeWidth={1.5}
+                                strokeLinejoin="round"
+                            />
+                        )}
+
+                    </g>
+                </svg>
+            )}
         </div>
     );
 }

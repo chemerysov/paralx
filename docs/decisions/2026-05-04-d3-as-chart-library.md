@@ -2,7 +2,7 @@
 
 DATE: 2026-05-04
 
-STATUS: accepted
+STATUS: superseded by `2026-05-07-svg-as-2d-chart-engine`
 
 AUTHOR: Andrii Chemerysov
 
