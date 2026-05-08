@@ -86,8 +86,9 @@ func main() {
 		ticker := time.NewTicker(24 * time.Hour)
 		defer ticker.Stop()
 		// ticker.C is a goroutine channel
-		// infinite loop fires each time 24 hours elapse
+		// infinite loop, fires each time 24 hours elapse
 		for range ticker.C {
+			// runFetches located below
 			runFetches(pool, fredAPIKey)
 		}
 	}()

@@ -2,7 +2,7 @@
 
 DATE: 2026-05-04
 
-STATUS: superseded by `2026-05-07-svg-as-2d-chart-engine`
+STATUS: superseded by `2026-05-08-d3-as-svg-chart-library`
 
 AUTHOR: Andrii Chemerysov
 
