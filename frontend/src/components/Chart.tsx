@@ -361,7 +361,7 @@ export default function Chart({ series, title, cite }: ChartProps) {
                                         fontSize={12}
                                         fontFamily="ui-serif, Georgia, serif"
                                         stroke="#f8f8f6"
-                                        strokeWidth={1}
+                                        strokeWidth={3}
                                         paintOrder="stroke"
                                     >
                                         {formatHoverValue(hoveredPoint.value)}
