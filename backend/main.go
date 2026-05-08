@@ -35,8 +35,10 @@ type fredResponse struct {
 }
 
 type fredSeriesInfo struct {
+	Title              string `json:"title"`
 	Units              string `json:"units"`
 	SeasonalAdjustment string `json:"seasonal_adjustment"`
+	Frequency          string `json:"frequency"`
 }
 
 type fredSeriesResponse struct {
@@ -86,6 +88,8 @@ func main() {
 		);
 		ALTER TABLE series_fetches ADD COLUMN IF NOT EXISTS units TEXT;
 		ALTER TABLE series_fetches ADD COLUMN IF NOT EXISTS seasonal_adjustment TEXT;
+		ALTER TABLE series_fetches ADD COLUMN IF NOT EXISTS title TEXT;
+		ALTER TABLE series_fetches ADD COLUMN IF NOT EXISTS frequency TEXT;
 	`)
 	if err != nil {
 		log.Fatal("db: migrations failed: ", err)
@@ -117,30 +121,57 @@ func main() {
 		// /api/series/{id}/meta — returns last_fetched_at without triggering a fetch
 		if strings.HasSuffix(path, "/meta") {
 			seriesID := strings.TrimSuffix(path, "/meta")
-			var lastFetchedAt time.Time
-			var units, seasonalAdj string
-			err := pool.QueryRow(context.Background(), `
-				SELECT last_fetched_at,
-				       COALESCE(units, ''),
-				       COALESCE(seasonal_adjustment, '')
-				FROM series_fetches WHERE series_id = $1
-			`, seriesID).Scan(&lastFetchedAt, &units, &seasonalAdj)
-			if err != nil {
-				http.Error(w, "not found", http.StatusNotFound)
-				return
+
+			queryMeta := func() (map[string]string, error) {
+				var lastFetchedAt time.Time
+				var title, units, seasonalAdj, frequency string
+				err := pool.QueryRow(context.Background(), `
+					SELECT last_fetched_at,
+					       COALESCE(title, ''),
+					       COALESCE(units, ''),
+					       COALESCE(seasonal_adjustment, ''),
+					       COALESCE(frequency, '')
+					FROM series_fetches WHERE series_id = $1
+				`, seriesID).Scan(&lastFetchedAt, &title, &units, &seasonalAdj, &frequency)
+				if err != nil {
+					return nil, err
+				}
+				return map[string]string{
+					"last_fetched_at":     lastFetchedAt.UTC().Format(time.RFC3339),
+					"title":               title,
+					"units":               units,
+					"seasonal_adjustment": seasonalAdj,
+					"frequency":           frequency,
+				}, nil
 			}
+
+			meta, err := queryMeta()
+			needsRefetch := err != nil ||
+				meta["title"] == "" ||
+				meta["units"] == "" ||
+				meta["frequency"] == ""
+			if needsRefetch {
+				// series absent or has incomplete metadata — fetch now and retry
+				if fetchErr := fetchSeries(pool, fredAPIKey, seriesID, true); fetchErr != nil {
+					log.Printf("meta handler: %v", fetchErr)
+					http.Error(w, "failed to fetch series", http.StatusInternalServerError)
+					return
+				}
+				meta, err = queryMeta()
+				if err != nil {
+					http.Error(w, "not found", http.StatusNotFound)
+					return
+				}
+			}
+
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]string{
-				"last_fetched_at":     lastFetchedAt.UTC().Format(time.RFC3339),
-				"units":               units,
-				"seasonal_adjustment": seasonalAdj,
-			})
+			json.NewEncoder(w).Encode(meta)
 			return
 		}
 
 		seriesID := path
 
-		if err := fetchSeries(pool, fredAPIKey, seriesID); err != nil {
+		if err := fetchSeries(pool, fredAPIKey, seriesID, false); err != nil {
 			log.Printf("handler: %v", err)
 			http.Error(w, "failed to fetch series", http.StatusInternalServerError)
 			return
@@ -223,12 +254,12 @@ func main() {
 // fetchSeries fetches one series from FRED and upserts it into the database.
 // It respects the 24-hour cache in series_fetches and is safe to call
 // from both the scheduler and the HTTP handler.
-func fetchSeries(pool *pgxpool.Pool, apiKey string, id string) error {
+func fetchSeries(pool *pgxpool.Pool, apiKey string, id string, force bool) error {
 	var lastFetched time.Time
 	err := pool.QueryRow(context.Background(), `
 		SELECT last_fetched_at FROM series_fetches WHERE series_id = $1
 	`, id).Scan(&lastFetched)
-	if err == nil && time.Since(lastFetched) <= 24*time.Hour {
+	if !force && err == nil && time.Since(lastFetched) <= 24*time.Hour {
 		log.Printf("scheduler: %s is up to date, skipping", id)
 		return nil
 	}
@@ -282,20 +313,24 @@ func fetchSeries(pool *pgxpool.Pool, apiKey string, id string) error {
 	if metaDecodeErr != nil {
 		return fmt.Errorf("decode meta %s: %w", id, metaDecodeErr)
 	}
-	var units, seasonalAdj string
+	var title, units, seasonalAdj, frequency string
 	if len(fredSeries.Seriess) > 0 {
+		title = fredSeries.Seriess[0].Title
 		units = fredSeries.Seriess[0].Units
 		seasonalAdj = fredSeries.Seriess[0].SeasonalAdjustment
+		frequency = fredSeries.Seriess[0].Frequency
 	}
 
 	_, err = pool.Exec(context.Background(), `
-		INSERT INTO series_fetches (series_id, last_fetched_at, units, seasonal_adjustment)
-		VALUES ($1, NOW(), $2, $3)
+		INSERT INTO series_fetches (series_id, last_fetched_at, title, units, seasonal_adjustment, frequency)
+		VALUES ($1, NOW(), $2, $3, $4, $5)
 		ON CONFLICT (series_id) DO UPDATE
 			SET last_fetched_at = NOW(),
+			    title = EXCLUDED.title,
 			    units = EXCLUDED.units,
-			    seasonal_adjustment = EXCLUDED.seasonal_adjustment
-	`, id, units, seasonalAdj)
+			    seasonal_adjustment = EXCLUDED.seasonal_adjustment,
+			    frequency = EXCLUDED.frequency
+	`, id, title, units, seasonalAdj, frequency)
 	if err != nil {
 		return fmt.Errorf("update series_fetches %s: %w", id, err)
 	}
@@ -306,7 +341,7 @@ func fetchSeries(pool *pgxpool.Pool, apiKey string, id string) error {
 
 func runFetches(pool *pgxpool.Pool, apiKey string) {
 	for _, id := range seriesIDs {
-		if err := fetchSeries(pool, apiKey, id); err != nil {
+		if err := fetchSeries(pool, apiKey, id, false); err != nil {
 			log.Printf("scheduler: %v", err)
 		}
 	}
