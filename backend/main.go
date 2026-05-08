@@ -142,6 +142,13 @@ func main() {
 	// for file system details see backend/Dockerfile
 	mux.Handle("/", http.FileServer(http.Dir("dist")))
 
+	if os.Getenv("TLS_DISABLED") == "true" {
+		// local development: plain HTTP, no autocert
+		log.Println("TLS disabled, serving HTTP on :8080")
+		log.Fatal(http.ListenAndServe(":8080", mux))
+		return
+	}
+
 	manager := &autocert.Manager{
 		// see docker-compose.yml for details on certs volume
 		Cache:      autocert.DirCache("/certs"),

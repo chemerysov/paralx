@@ -12,4 +12,12 @@ export default defineConfig({
     build: {
         assets: '_assets',
     },
+
+    vite: {
+        server: {
+            proxy: {
+                '/api': 'http://localhost:8080',
+            },
+        },
+    },
 });
