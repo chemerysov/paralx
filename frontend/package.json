@@ -20,5 +20,8 @@
         "@types/katex": "^0.16.0",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": ["esbuild", "sharp"]
     }
 }
