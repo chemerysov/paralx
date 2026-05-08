@@ -48,8 +48,9 @@ const { title, description } = Astro.props;
         btn.addEventListener("click", () => {
             el.open = false;
             const headerHeight = document.querySelector("header")?.offsetHeight ?? 0;
-            const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 10;
-            window.scrollTo({ top, behavior: "smooth" });
+            el.style.scrollMarginTop = (headerHeight + 10) + "px";
+            el.style.scrollMarginLeft = "24px";
+            el.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
 
             const observer = new IntersectionObserver((entries, obs) => {
                 if (entries[0].isIntersecting) {
