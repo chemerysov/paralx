@@ -35,4 +35,36 @@ const { title, description } = Astro.props;
         <p>&copy; 2026 Andrii Chemerysov and contributors. MIT License.</p>
     </footer>
 </body>
+
+<script>
+    // Appends a collapse button to every <details> element.
+    // Clicking it closes the block and scrolls its <summary> back into view.
+    document.querySelectorAll("details").forEach((el) => {
+        const btn = document.createElement("button");
+        btn.className = "details-close";
+        btn.setAttribute("aria-label", "Collapse section");
+        btn.type = "button";
+
+        btn.addEventListener("click", () => {
+            el.open = false;
+            const headerHeight = document.querySelector("header")?.offsetHeight ?? 0;
+            const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 10;
+            window.scrollTo({ top, behavior: "smooth" });
+
+            const observer = new IntersectionObserver((entries, obs) => {
+                if (entries[0].isIntersecting) {
+                    el.classList.add("details-returning");
+                    el.addEventListener("animationend", () => {
+                        el.classList.remove("details-returning");
+                    }, { once: true });
+                    obs.disconnect();
+                }
+            }, { threshold: 0.1 });
+
+            observer.observe(el);
+        });
+
+        el.appendChild(btn);
+    });
+</script>
 </html>
