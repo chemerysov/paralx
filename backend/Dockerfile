@@ -1,6 +1,6 @@
 # stage 1: build the Astro frontend
 FROM node:24-alpine AS frontend-builder
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.33.2
 WORKDIR /build
 # docker optimization: if package.json and pnpm-lock.yaml dont change
 # then no pnpm install necessary
