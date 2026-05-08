@@ -16,6 +16,7 @@ import (
 )
 
 const fredBaseURL = "https://api.stlouisfed.org/fred/series/observations"
+const fredBaseSeriesURL = "https://api.stlouisfed.org/fred/series"
 
 type observation struct {
 	Date  string  `json:"date"`
@@ -31,6 +32,15 @@ type fredObservation struct {
 
 type fredResponse struct {
 	FredObservations []fredObservation `json:"observations"`
+}
+
+type fredSeriesInfo struct {
+	Units              string `json:"units"`
+	SeasonalAdjustment string `json:"seasonal_adjustment"`
+}
+
+type fredSeriesResponse struct {
+	Seriess []fredSeriesInfo `json:"seriess"`
 }
 
 var seriesIDs = []string{}
@@ -74,6 +84,8 @@ func main() {
 			series_id       TEXT        PRIMARY KEY,
 			last_fetched_at TIMESTAMPTZ NOT NULL
 		);
+		ALTER TABLE series_fetches ADD COLUMN IF NOT EXISTS units TEXT;
+		ALTER TABLE series_fetches ADD COLUMN IF NOT EXISTS seasonal_adjustment TEXT;
 	`)
 	if err != nil {
 		log.Fatal("db: migrations failed: ", err)
@@ -96,11 +108,37 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.Handle("/api/series/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		seriesID := strings.TrimPrefix(r.URL.Path, "/api/series/")
-		if seriesID == "" {
+		path := strings.TrimPrefix(r.URL.Path, "/api/series/")
+		if path == "" {
 			http.Error(w, "missing series id", http.StatusBadRequest)
 			return
 		}
+
+		// /api/series/{id}/meta — returns last_fetched_at without triggering a fetch
+		if strings.HasSuffix(path, "/meta") {
+			seriesID := strings.TrimSuffix(path, "/meta")
+			var lastFetchedAt time.Time
+			var units, seasonalAdj string
+			err := pool.QueryRow(context.Background(), `
+				SELECT last_fetched_at,
+				       COALESCE(units, ''),
+				       COALESCE(seasonal_adjustment, '')
+				FROM series_fetches WHERE series_id = $1
+			`, seriesID).Scan(&lastFetchedAt, &units, &seasonalAdj)
+			if err != nil {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]string{
+				"last_fetched_at":     lastFetchedAt.UTC().Format(time.RFC3339),
+				"units":               units,
+				"seasonal_adjustment": seasonalAdj,
+			})
+			return
+		}
+
+		seriesID := path
 
 		if err := fetchSeries(pool, fredAPIKey, seriesID); err != nil {
 			log.Printf("handler: %v", err)
@@ -230,11 +268,34 @@ func fetchSeries(pool *pgxpool.Pool, apiKey string, id string) error {
 		}
 	}
 
+	metaURL := fmt.Sprintf(
+		"%s?series_id=%s&api_key=%s&file_type=json",
+		fredBaseSeriesURL, id, apiKey,
+	)
+	metaResp, err := http.Get(metaURL)
+	if err != nil {
+		return fmt.Errorf("fetch meta %s: %w", id, err)
+	}
+	var fredSeries fredSeriesResponse
+	metaDecodeErr := json.NewDecoder(metaResp.Body).Decode(&fredSeries)
+	metaResp.Body.Close()
+	if metaDecodeErr != nil {
+		return fmt.Errorf("decode meta %s: %w", id, metaDecodeErr)
+	}
+	var units, seasonalAdj string
+	if len(fredSeries.Seriess) > 0 {
+		units = fredSeries.Seriess[0].Units
+		seasonalAdj = fredSeries.Seriess[0].SeasonalAdjustment
+	}
+
 	_, err = pool.Exec(context.Background(), `
-		INSERT INTO series_fetches (series_id, last_fetched_at)
-		VALUES ($1, NOW())
-		ON CONFLICT (series_id) DO UPDATE SET last_fetched_at = NOW()
-	`, id)
+		INSERT INTO series_fetches (series_id, last_fetched_at, units, seasonal_adjustment)
+		VALUES ($1, NOW(), $2, $3)
+		ON CONFLICT (series_id) DO UPDATE
+			SET last_fetched_at = NOW(),
+			    units = EXCLUDED.units,
+			    seasonal_adjustment = EXCLUDED.seasonal_adjustment
+	`, id, units, seasonalAdj)
 	if err != nil {
 		return fmt.Errorf("update series_fetches %s: %w", id, err)
 	}
