@@ -33,7 +33,7 @@ type fredResponse struct {
 	FredObservations []fredObservation `json:"observations"`
 }
 
-var seriesIDs = []string{"GDPC1"}
+var seriesIDs = []string{}
 
 func main() {
 	fredAPIKey := os.Getenv("FRED_API_KEY")
@@ -100,6 +100,13 @@ func main() {
 			http.Error(w, "missing series id", http.StatusBadRequest)
 			return
 		}
+
+		if err := fetchSeries(pool, fredAPIKey, seriesID); err != nil {
+			log.Printf("handler: %v", err)
+			http.Error(w, "failed to fetch series", http.StatusInternalServerError)
+			return
+		}
+
 		rows, err := pool.Query(context.Background(), `
 			SELECT date, value
 			FROM series_observations
@@ -167,63 +174,71 @@ func main() {
 	log.Fatal(httpsServer.ListenAndServeTLS("", ""))
 }
 
+// fetchSeries fetches one series from FRED and upserts it into the database.
+// It respects the 24-hour cache in series_fetches and is safe to call
+// from both the scheduler and the HTTP handler.
+func fetchSeries(pool *pgxpool.Pool, apiKey string, id string) error {
+	var lastFetched time.Time
+	err := pool.QueryRow(context.Background(), `
+		SELECT last_fetched_at FROM series_fetches WHERE series_id = $1
+	`, id).Scan(&lastFetched)
+	if err == nil && time.Since(lastFetched) <= 24*time.Hour {
+		log.Printf("scheduler: %s is up to date, skipping", id)
+		return nil
+	}
+
+	url := fmt.Sprintf(
+		"%s?series_id=%s&api_key=%s&file_type=json",
+		fredBaseURL, id, apiKey,
+	)
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("fetch %s: %w", id, err)
+	}
+
+	var fred fredResponse
+	decodeErr := json.NewDecoder(resp.Body).Decode(&fred)
+	resp.Body.Close()
+	if decodeErr != nil {
+		return fmt.Errorf("decode %s: %w", id, decodeErr)
+	}
+
+	for _, obs := range fred.FredObservations {
+		if obs.Value == "." {
+			continue
+		}
+		value, err := strconv.ParseFloat(obs.Value, 64)
+		if err != nil {
+			log.Printf("scheduler: skipping unparseable value %q for %s on %s", obs.Value, id, obs.Date)
+			continue
+		}
+		_, err = pool.Exec(context.Background(), `
+			INSERT INTO series_observations (series_id, date, value)
+			VALUES ($1, $2, $3)
+			ON CONFLICT (series_id, date) DO UPDATE SET value = EXCLUDED.value
+		`, id, obs.Date, value)
+		if err != nil {
+			log.Printf("scheduler: upsert %s %s: %v", id, obs.Date, err)
+		}
+	}
+
+	_, err = pool.Exec(context.Background(), `
+		INSERT INTO series_fetches (series_id, last_fetched_at)
+		VALUES ($1, NOW())
+		ON CONFLICT (series_id) DO UPDATE SET last_fetched_at = NOW()
+	`, id)
+	if err != nil {
+		return fmt.Errorf("update series_fetches %s: %w", id, err)
+	}
+
+	log.Printf("scheduler: %s updated, %d observations", id, len(fred.FredObservations))
+	return nil
+}
+
 func runFetches(pool *pgxpool.Pool, apiKey string) {
 	for _, id := range seriesIDs {
-		var lastFetched time.Time
-		err := pool.QueryRow(context.Background(), `
-			SELECT last_fetched_at FROM series_fetches WHERE series_id = $1
-		`, id).Scan(&lastFetched)
-		if err == nil && time.Since(lastFetched) <= 24*time.Hour {
-			log.Printf("scheduler: %s is up to date, skipping", id)
-			continue
+		if err := fetchSeries(pool, apiKey, id); err != nil {
+			log.Printf("scheduler: %v", err)
 		}
-
-		url := fmt.Sprintf(
-			"%s?series_id=%s&api_key=%s&file_type=json",
-			fredBaseURL, id, apiKey,
-		)
-		resp, err := http.Get(url)
-		if err != nil {
-			log.Printf("scheduler: failed to fetch %s: %v", id, err)
-			continue
-		}
-
-		var fred fredResponse
-		decodeErr := json.NewDecoder(resp.Body).Decode(&fred)
-		resp.Body.Close()
-		if decodeErr != nil {
-			log.Printf("scheduler: failed to decode %s: %v", id, decodeErr)
-			continue
-		}
-
-		for _, obs := range fred.FredObservations {
-			if obs.Value == "." {
-				continue
-			}
-			value, err := strconv.ParseFloat(obs.Value, 64)
-			if err != nil {
-				log.Printf("scheduler: skipping unparseable value %q for %s on %s", obs.Value, id, obs.Date)
-				continue
-			}
-			_, err = pool.Exec(context.Background(), `
-				INSERT INTO series_observations (series_id, date, value)
-				VALUES ($1, $2, $3)
-				ON CONFLICT (series_id, date) DO UPDATE SET value = EXCLUDED.value
-			`, id, obs.Date, value)
-			if err != nil {
-				log.Printf("scheduler: upsert %s %s: %v", id, obs.Date, err)
-			}
-		}
-
-		_, err = pool.Exec(context.Background(), `
-			INSERT INTO series_fetches (series_id, last_fetched_at)
-			VALUES ($1, NOW())
-			ON CONFLICT (series_id) DO UPDATE SET last_fetched_at = NOW()
-		`, id)
-		if err != nil {
-			log.Printf("scheduler: update series_fetches %s: %v", id, err)
-		}
-
-		log.Printf("scheduler: %s updated, %d observations", id, len(fred.FredObservations))
 	}
 }
