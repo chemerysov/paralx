@@ -30,7 +30,7 @@ const CSS_HEIGHT = 360;
 
 interface ChartProps {
     series: string;
-    title: string;
+    title?: string;
     cite?: ReactNode;
 }
 
@@ -41,11 +41,13 @@ export default function Chart({ series, title, cite }: ChartProps) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+    const [seriesTitle, setSeriesTitle] = useState<string | null>(null);
     const [units, setUnits] = useState<string | null>(null);
     const [seasonalAdj, setSeasonalAdj] = useState<string | null>(null);
+    const [frequency, setFrequency] = useState<string | null>(null);
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-    useEffect(() => {
+    function fetchMeta() {
         fetch(`/api/series/${series}/meta`)
             .then(res => res.ok ? res.json() : null)
             .then(meta => {
@@ -60,10 +62,16 @@ export default function Chart({ series, title, cite }: ChartProps) {
                         timeZoneName: "short",
                     }));
                 }
+                if (meta?.title) setSeriesTitle(meta.title);
                 if (meta?.units) setUnits(meta.units);
                 if (meta?.seasonal_adjustment) setSeasonalAdj(meta.seasonal_adjustment);
+                if (meta?.frequency) setFrequency(meta.frequency);
             })
             .catch(() => {});
+    }
+
+    useEffect(() => {
+        fetchMeta();
     }, [series]);
 
     useEffect(() => {
@@ -81,6 +89,7 @@ export default function Chart({ series, title, cite }: ChartProps) {
                     value: d.value,
                 })));
                 setLoading(false);
+                fetchMeta();
             })
             .catch(() => {
                 setError("Failed to load data.");
@@ -126,14 +135,22 @@ export default function Chart({ series, title, cite }: ChartProps) {
         if (data.length === 0) return [];
         const lastYear = data[data.length - 1].date.getFullYear();
         const firstYear = data[0].date.getFullYear();
+        const [domainStart, domainEnd] = xScale.domain() as [Date, Date];
         const ticks: Date[] = [];
         for (let y = lastYear; y >= firstYear; y -= xTickInterval) {
-            ticks.unshift(new Date(y, 0, 1));
+            const t = new Date(y, 0, 1);
+            if (t >= domainStart && t <= domainEnd) ticks.unshift(t);
         }
         return ticks;
     })();
 
     const yMax = yScale.domain()[1] as number;
+
+    function formatAxisValue(v: number): string {
+        if (v === 0) return "0";
+        if (yMax >= 1000) return (v / 1000).toFixed(0) + "k";
+        return Number.isInteger(v) ? String(v) : v.toFixed(1);
+    }
 
     const lineGenerator = line<ParsedObservation>()
         .x(d => xScale(d.date))
@@ -169,8 +186,9 @@ export default function Chart({ series, title, cite }: ChartProps) {
                 fontSize: "1rem",
                 color: "#1a1a1a",
                 textAlign: "center",
+                textWrap: "balance",
             }}>
-                {title}
+                {title ?? seriesTitle ?? series}
             </p>
             <div ref={containerRef} style={{ width: "100%" }}>
 
@@ -228,9 +246,7 @@ export default function Chart({ series, title, cite }: ChartProps) {
                                         fontFamily="ui-serif, Georgia, serif"
                                         fontSize={13}
                                     >
-                                        {tick === 0
-                                            ? "0"
-                                            : (tick / 1000).toFixed(0) + "k"}
+                                        {formatAxisValue(tick)}
                                     </text>
                                 </g>
                             ))}
@@ -254,7 +270,7 @@ export default function Chart({ series, title, cite }: ChartProps) {
                                     fontFamily="ui-serif, Georgia, serif"
                                     fontSize={13}
                                 >
-                                    {yMax === 0 ? "0" : (yMax / 1000).toFixed(0) + "k"}
+                                    {formatAxisValue(yMax)}
                                 </text>
                             </g>
 
@@ -335,7 +351,7 @@ export default function Chart({ series, title, cite }: ChartProps) {
                                         strokeWidth={1}
                                         paintOrder="stroke"
                                     >
-                                        {hoveredPoint.date.getFullYear()}
+                                        {hoveredPoint.date.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                                     </text>
                                     <text
                                         x={labelX} y={28}
@@ -387,6 +403,11 @@ export default function Chart({ series, title, cite }: ChartProps) {
                                 Units: {[units, seasonalAdj].filter(Boolean).join(", ")}
                             </span>
                         )}
+                        {frequency && (
+                            <span style={{ display: "block" }}>
+                                Frequency: {frequency}
+                            </span>
+                        )}
                         <span style={{ display: "block" }}>
                             Source: Federal Reserve Bank of St. Louis,{" "}
                             <a
@@ -397,8 +418,12 @@ export default function Chart({ series, title, cite }: ChartProps) {
                             >
                                 {series}
                             </a>
-                            {lastUpdated && ` · Retrieved ${lastUpdated}`}
                         </span>
+                        {lastUpdated && (
+                            <span style={{ display: "block" }}>
+                                Retrieved: {lastUpdated}
+                            </span>
+                        )}
                     </>
                 )}
             </p>
