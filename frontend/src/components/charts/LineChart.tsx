@@ -161,7 +161,7 @@ export default function LineChart({ series, title, cite }: LineChartProps) {
     const xScale = scaleTime().domain(xDomain).range([0, innerWidth]);
 
     const yExtent = visiblePoints.length > 0 ? (extent(visiblePoints, d => d.value) as [number, number]) : [0, 1];
-    const yScale = scaleLinear().domain(yExtent).nice(6).range([innerHeight, 0]);
+    const yScale = scaleLinear().domain([Math.min(0, yExtent[0]), yExtent[1]]).nice(6).range([innerHeight, 0]);
 
     const yTicks = yScale.ticks(6);
     const xTicks = computeXTicks(visiblePrimaryData, innerWidth, xDomain);
