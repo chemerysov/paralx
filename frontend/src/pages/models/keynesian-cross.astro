@@ -129,6 +129,9 @@ import StackedChart from '../../components/charts/StackedChart.tsx';
         </p>
     </details>
 
+    <p>
+		The following chart shows US GDP over time:
+	</p>
     <LineChart
         series="GDPCA"
         titleFormula="Y"
@@ -180,15 +183,29 @@ import StackedChart from '../../components/charts/StackedChart.tsx';
         </p>
     </details>
 
+    <p>
+		In practice, the components are measured from different sources using different methods, and when added together they do not sum exactly to independently measured GDP:
+	</p>
+    <Katex
+        formula='Y+\\varepsilon=C+I+G+X-M'
+        display={true}
+    />
+    <p>
+		Where <Katex formula="\\varepsilon" /> is the statistical discrepancy, the gap between GDP as measured from the expenditure side and GDP as measured from the income or output side.
+	</p>
+
+    <p>
+		The following chart shows each of these components over time:
+	</p>
     <StackedChart
         title="GDP by Expenditure Component"
         series={[
-            { id: "PCEC96",  label: "C", labelHover: "C", color: "#8b7355", sign: 1              },
-            { id: "GPDIC1",  label: "I", labelHover: "I", color: "#4a6741", sign: 1              },
-            { id: "GCEC1",   label: "G", labelHover: "G", color: "#3d5a6b", sign: 1              },
-            { id: "EXPGSC1", label: "X", labelHover: "X", color: "#7a5c7a", sign: 1              },
-            { id: "IMPGSC1", label: "M", labelHover: "M", color: "#b5564e", sign: -1             },
-            { id: "GDPC1",   label: "Y", labelHover: "Y",                   sign: 1, isTotal: true },
+            { id: "PCEC96",  label: "C", labelHover: "C", sign: 1              },
+            { id: "GPDIC1",  label: "I", labelHover: "I", sign: 1              },
+            { id: "GCEC1",   label: "G", labelHover: "G", sign: 1              },
+            { id: "EXPGSC1", label: "X", labelHover: "X", sign: 1              },
+            { id: "IMPGSC1", label: "M", labelHover: "M", sign: -1             },
+            { id: "GDPC1",   label: "Y", labelHover: "Y", sign: 1, isTotal: true },
         ]}
         client:visible
     />
@@ -243,6 +260,50 @@ import StackedChart from '../../components/charts/StackedChart.tsx';
             <strong>The mechanism does not extend to services, which cannot be stored.</strong> The inventory adjustment mechanism only applies to goods that can be physically stored. Services cannot be inventoried. When demand for a haircut, a legal consultation, or a hospital visit falls short of what a firm anticipated, there is no accumulation of unsold output; the service simply does not occur and the revenue is lost. When demand exceeds expectations, the firm cannot draw down a reserve of pre-produced services; it either turns customers away or stretches capacity. The defense is that the Keynesian Cross was developed in an era when goods production was a substantially larger share of economic output, and that the model's assumptions were more defensible in that context. However, the model is not a good fit for service economies.
         </p>
     </details>
+
+    <p>
+		The same issue as with the GDP decomposition arises within the investment split: planned and unplanned investment do not sum exactly to gross private domestic investment <Katex formula="I" /> as independently measured, leaving a statistical discrepancy <Katex formula="\\varepsilon" />:
+	</p>
+    <Katex
+        formula='I+\\varepsilon=I_{\\text{planned}}+I_{\\text{unplanned}}'
+        display={true}
+    />
+
+    <p>
+		As it happens, the Federal Reserve tracks the two components of investment <Katex formula="I" />: fixed private investment, covering deliberate expenditure on capital goods and structures, corresponds to <Katex formula="I_{\\text{planned}}" />, while the change in real private inventories corresponds to <Katex formula="I_{\\text{unplanned}}" />. The two do not sum exactly to gross private domestic investment as independently measured, and the chart includes the residual gap <Katex formula="\\varepsilon" /> as a separate series.
+	</p>
+    <StackedChart
+        title="Investment: Planned vs. Unplanned"
+        series={[
+            {id: "FPI",   label: "I_{\\text{planned}}",   labelHover: "planned",   sign: 1},
+            {id: "CBIC1", label: "I_{\\text{unplanned}}", labelHover: "unplanned", sign: 1, unstable: true},
+            {id: "GPDI",  label: "I",                     labelHover: "I",         sign: 1, isTotal: true},
+        ]}
+        client:visible
+    />
+    <details>
+		<summary>How closely does the change in private inventories as we use it here correspond to unplanned investment as the model defines it?</summary>
+		<p>
+			<strong>The series captures total inventory change, not unplanned inventory change.</strong> The change in real private inventories measures the difference between what firms produced and what was sold in a given period, regardless of whether the accumulation or depletion was intentional. Firms deliberately build inventories ahead of anticipated demand, seasonally stock shelves, and strategically hold buffer stocks. All of this planned inventory investment enters the series alongside the genuinely unplanned residual the model is trying to isolate. The series is seasonally adjusted, which removes predictable calendar-driven inventory movements and brings it somewhat closer to capturing genuine surprises, but seasonal adjustment cannot distinguish between other forms of planned accumulation and unplanned accumulation. The two cannot be fully separated from the aggregate data. The defense is that there is probably no better available series, and that deliberate inventory movements may partly cancel out over the business cycle, leaving the remaining variation as a rough proxy for expectational error. However, this is an assumption about what the data contains rather than something the data itself confirms.
+		</p>
+		<p>
+			<strong>Fixed private investment almost certainly contains unplanned components as well.</strong> The model assigns all unplanned investment to the inventory series and treats fixed private investment as entirely planned. But as discussed earlier, firms that build capacity based on demand forecasts that turn out to be wrong have also made investment miscalibrated to actual conditions. The clean separation the model requires is not something the data can enforce, because fixed investment and inventory investment are categorized by what was purchased, not by whether the purchase matched intentions. Using these two series as proxies for the model's planned and unplanned split is a reasonable practical approximation, but the correspondence between the accounting categories and the theoretical ones is imperfect in both directions.
+		</p>
+	</details>
+    <details>
+		<summary>Why has inventory investment become so small relative to total investment compared to earlier decades?</summary>
+		<p>
+			<strong>The shift toward services reduces the scope for inventory investment.</strong> As discussed in the criticisms of the planned and unplanned split, services cannot be inventoried. A growing share of economic output is healthcare, software, financial services, education, and similar activities that produce no storable goods. As the economy's composition has shifted in this direction, the portion of activity that could ever generate inventory fluctuations has probably shrunk as a fraction of the whole, which would mechanically reduce inventory investment relative to total investment even if firm-level inventory behavior had not changed at all.
+		</p>
+		<p>
+			<strong>New forms of investment may have grown to dwarf inventory accumulation in scale.</strong> Fixed private investment now includes software, intellectual property, and research and development, categories that have probably expanded substantially over recent decades. These forms of investment have no inventory component by their nature: you cannot accumulate unsold software on a shelf. As they have likely grown as a share of total investment, inventory investment may have become correspondingly smaller in relative terms, not necessarily because firms hold fewer physical inventories than before, but possibly because the economy has developed large investment categories to which the inventory mechanism simply does not apply.
+		</p>
+		<p>
+			<strong>Inventory management has likely improved.</strong> Firms have developed better tools for tracking demand in real time, coordinating with suppliers, and reducing the buffer stocks they need to hold. Whether this represents a genuine structural decline in unplanned inventory accumulation or simply a reduction in planned buffer stocks is difficult to determine from aggregate data alone, for the reasons discussed above. It may mean the series is capturing less economic noise than it once did, or it may mean firms are simply running leaner operations with less inventory at any given time.
+		</p>
+	</details>
+    <hr />
+
     <p>
         Substituting this split back into the GDP expenditure identity replaces the single investment term with its two components:
     </p>
@@ -250,7 +311,6 @@ import StackedChart from '../../components/charts/StackedChart.tsx';
         formula="Y=C+\\underbrace{I_{\\text{planned}}+I_{\\text{unplanned}}}_I+G+X-M"
         display={true}
     />
-    <hr />
 
     <p>
         The second assumption concerns consumption <Katex formula="C" />. Here the Keynesian Cross makes a behavioral claim: that aggregate consumption <Katex formula="C" /> moves with aggregate income <Katex formula="Y" />. Households that receive more income spend more; households that receive less spend less. The model does not yet specify the precise form of this relationship, but the foundational assumption is the proportionality itself:
@@ -355,6 +415,14 @@ import StackedChart from '../../components/charts/StackedChart.tsx';
 			<strong>The marginal propensity to import is not stable over time.</strong> Trade agreements, changes in domestic production capacity, and long-run shifts in consumer preferences all affect the fraction of income that flows to imports. A fixed <Katex formula="m" /> treats the economy's trade structure as constant, which is a reasonable approximation over short horizons but increasingly misleading over longer ones. The defense is that the Keynesian Cross is a short-run model and <Katex formula="m" /> can be re-estimated as conditions change. However, this concedes that the parameter is empirical rather than structural.
 		</p>
 	</details>
+
+    <p>
+		Substituting the linear import function replaces <Katex formula="M" /> with its components:
+	</p>
+    <Katex
+        formula="Y=\\underbrace{a+b\\cdot Y}_C+\\underbrace{I_{\\text{planned}}+I_{\\text{unplanned}}}_I+G+X\\underbrace{-\\mu-mY}_{-M}"
+        display={true}
+    />
     <hr />
 
     <Katex

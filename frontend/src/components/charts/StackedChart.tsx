@@ -17,7 +17,19 @@ import Katex from "../Katex";
 
 import { MARGIN, CSS_HEIGHT, type Observation, formatAxisValue, formatHoverValue, measureTextWidth } from "./chartShared";
 import { useContainerWidth } from "./useContainerWidth";
-import ChartFooter, { type SeriesLink, type SeriesLegendEntry } from "./ChartFooter";
+import ChartFooter, { type SeriesLegendEntry } from "./ChartFooter";
+
+// palette for stacked areas — muted, earthy tones that suit the warm off-white background
+const SERIES_PALETTE = [
+    "#c8a86c",  // honey
+    "#7cba68",  // meadow
+    "#68a8c8",  // cornflower
+    "#a87cc8",  // lilac
+    "#c87c74",  // dusty rose
+    "#6cbaaa",  // seafoam
+    "#c8b85c",  // straw
+];
+const TOTAL_COLOR = "#3a3a3a";
 
 // hover tooltip geometry
 const TOOLTIP_PAD_X = 8;
@@ -25,22 +37,21 @@ const TOOLTIP_PAD_Y = 6;
 const TOOLTIP_LINE_H = 16;
 const TOOLTIP_DATE_Y = 10;
 const TOOLTIP_FIRST_SERIES_Y = 28;
-// small gap between the colon and the value column
-const TOOLTIP_COL_GAP = 4;
 
 export interface StackedSeriesConfig {
     id: string;
     label: string;
     labelHover?: string;
-    color?: string;
     sign: 1 | -1;
     isTotal?: boolean;
+    unstable?: boolean;
 }
 
 interface StackedChartProps {
     series: StackedSeriesConfig[];
     // title is required — StackedChart has no auto-generation from meta
     title: string;
+    titleFormula?: string;
     cite?: ReactNode;
 }
 
@@ -107,21 +118,8 @@ function computeBands(
     return result;
 }
 
-// returns the sign-prefixed label shown left of the colon in the hover tooltip
-function hoverLabel(cfg: StackedSeriesConfig): string {
-    const name = cfg.labelHover ?? cfg.label;
-    if (cfg.isTotal) return `≈${name}`;
-    return cfg.sign === 1 ? `+${name}` : `-${name}`;
-}
 
-// returns the sign-prefixed value shown right of the colon in the hover tooltip
-function hoverValue(cfg: StackedSeriesConfig, raw: number): string {
-    const v = formatHoverValue(raw);
-    if (cfg.isTotal) return `≈${v}`;
-    return cfg.sign === 1 ? `+${v}` : `-${v}`;
-}
-
-export default function StackedChart({ series, title, cite }: StackedChartProps) {
+export default function StackedChart({ series, title, titleFormula, cite }: StackedChartProps) {
     const [containerRef, width] = useContainerWidth();
     const [aligned, setAligned] = useState<AlignedPoint[]>([]);
     const [loading, setLoading] = useState(true);
@@ -133,8 +131,17 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
     const [seriesMeta, setSeriesMeta] = useState<Record<string, string>>({});
 
-    const stackSeries = series.filter(s => !s.isTotal);
-    const totalSeries = series.find(s => s.isTotal) ?? null;
+    const stackSeries  = series.filter(s => !s.isTotal);
+    const bandSeries   = stackSeries.filter(s => !s.unstable);
+    const unstableSeries = stackSeries.filter(s => s.unstable);
+    const totalSeries  = series.find(s => s.isTotal) ?? null;
+
+    // assign palette colors: non-total series get SERIES_PALETTE in order, total gets TOTAL_COLOR
+    const colorMap: Record<string, string> = {};
+    let paletteIdx = 0;
+    for (const s of series) {
+        colorMap[s.id] = s.isTotal ? TOTAL_COLOR : SERIES_PALETTE[paletteIdx++ % SERIES_PALETTE.length];
+    }
 
     useEffect(() => {
         const allIds = series.map(s => s.id);
@@ -199,11 +206,23 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
     const innerWidth = width - MARGIN.left - MARGIN.right;
     const innerHeight = CSS_HEIGHT - MARGIN.top - MARGIN.bottom;
 
-    const bands = aligned.length > 0 ? computeBands(aligned, stackSeries) : {};
+    const bands = aligned.length > 0 ? computeBands(aligned, bandSeries) : {};
+
+    const epsRawData = totalSeries && aligned.length > 0
+        ? aligned.map(pt => ({
+            date: pt.date,
+            value: (pt.values[totalSeries.id] ?? 0) - stackSeries.reduce(
+                (acc, cfg) => acc + (cfg.sign === 1 ? (pt.values[cfg.id] ?? 0) : -(pt.values[cfg.id] ?? 0)), 0
+            ),
+        }))
+        : null;
 
     const allBandY = Object.values(bands).flatMap(bd => bd.flatMap(p => [p.y0, p.y1]));
-    const yDataMin = allBandY.length > 0 ? Math.min(...allBandY) : 0;
-    const yDataMax = allBandY.length > 0 ? Math.max(...allBandY) : 1;
+    const unstableY = unstableSeries.flatMap(s => aligned.map(pt => pt.values[s.id] ?? 0));
+    const epsY = epsRawData ? epsRawData.map(p => p.value) : [];
+    const allY = [...allBandY, ...unstableY, ...epsY];
+    const yDataMin = allY.length > 0 ? Math.min(...allY) : 0;
+    const yDataMax = allY.length > 0 ? Math.max(...allY) : 1;
 
     const xScale = scaleTime()
         .domain(aligned.length > 0 ? (extent(aligned, d => d.date) as [Date, Date]) : [new Date(), new Date()])
@@ -255,6 +274,15 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
         ? totalLineGenerator(aligned.map(pt => ({ date: pt.date, value: pt.values[totalSeries.id] ?? 0 })))
         : null;
 
+    const epsPathD = epsRawData ? totalLineGenerator(epsRawData) : null;
+
+    const unstablePaths = aligned.length > 0
+        ? unstableSeries.map(s => ({
+            id: s.id,
+            d: totalLineGenerator(aligned.map(pt => ({ date: pt.date, value: pt.values[s.id] ?? 0 }))),
+        }))
+        : [];
+
     const bisectDate = bisector((d: AlignedPoint) => d.date).center;
 
     function handleMouseMove(e: React.MouseEvent<SVGRectElement>) {
@@ -268,16 +296,23 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
 
     const hoveredPoint = hoveredIndex !== null ? aligned[hoveredIndex] : null;
 
-    const seriesLinks: SeriesLink[] = series.map(s => ({ id: s.id }));
-
     const seriesLegend: SeriesLegendEntry[] = series
         .filter(s => seriesMeta[s.id])
         .map(s => ({
             id: s.id,
             label: s.label,
-            labelHover: s.labelHover,
             metaTitle: seriesMeta[s.id],
         }));
+
+    const epsFormula = totalSeries
+        ? (() => {
+            const terms = stackSeries.map((cfg, i) => {
+                if (i === 0) return cfg.label;
+                return cfg.sign === 1 ? `+ ${cfg.label}` : `- ${cfg.label}`;
+            }).join(" ");
+            return `${totalSeries.label} - \\left(${terms}\\right)`;
+        })()
+        : undefined;
 
     return (
         <div style={{ width: "100%", marginBottom: "20px" }}>
@@ -285,11 +320,15 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
                 margin: "0 0 8px 0",
                 fontFamily: "ui-serif, Georgia, serif",
                 fontSize: "1rem",
+                fontWeight: 700,
                 color: "#1a1a1a",
                 textAlign: "center",
                 textWrap: "balance",
             }}>
                 {title}
+                {titleFormula && (
+                    <> <Katex formula={titleFormula} display={false} /></>
+                )}
             </p>
 
             {/* legend */}
@@ -310,7 +349,15 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
                                 display: "inline-block",
                                 width: "16px",
                                 height: "0",
-                                borderTop: `2px dashed ${s.color ?? "#1a1a1a"}`,
+                                borderTop: `3px dashed ${colorMap[s.id]}`,
+                                flexShrink: 0,
+                            }} />
+                        ) : s.unstable ? (
+                            <span style={{
+                                display: "inline-block",
+                                width: "16px",
+                                height: "0",
+                                borderTop: `3px solid ${colorMap[s.id]}`,
                                 flexShrink: 0,
                             }} />
                         ) : (
@@ -318,18 +365,27 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
                                 display: "inline-block",
                                 width: "12px",
                                 height: "12px",
-                                backgroundColor: s.color ?? "#1a1a1a",
+                                backgroundColor: colorMap[s.id],
                                 borderRadius: "2px",
                                 flexShrink: 0,
                                 opacity: 0.85,
                             }} />
                         )}
-                        {s.labelHover
-                            ? <Katex formula={s.labelHover} display={false} />
-                            : s.label
-                        }
+                        <Katex formula={s.label} display={false} />
                     </span>
                 ))}
+                {epsRawData && (
+                    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <span style={{
+                            display: "inline-block",
+                            width: "16px",
+                            height: "0",
+                            borderTop: `3px dotted ${TOTAL_COLOR}`,
+                            flexShrink: 0,
+                        }} />
+                        ε
+                    </span>
+                )}
             </div>
 
             <div ref={containerRef} style={{ width: "100%" }}>
@@ -449,23 +505,45 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
                                     <path
                                         key={cfg.id}
                                         d={pathD}
-                                        fill={cfg.color ?? "#1a1a1a"}
+                                        fill={colorMap[cfg.id]}
                                         fillOpacity={0.82}
-                                        stroke={cfg.color ?? "#1a1a1a"}
+                                        stroke={colorMap[cfg.id]}
                                         strokeWidth={0.5}
                                         strokeOpacity={0.4}
                                     />
                                 );
                             })}
 
+                            {unstablePaths.map(({ id, d }) => d && (
+                                <path
+                                    key={id}
+                                    d={d}
+                                    fill="none"
+                                    stroke={colorMap[id]}
+                                    strokeWidth={1.5}
+                                    strokeLinejoin="round"
+                                />
+                            ))}
+
                             {totalPathD && (
                                 <path
                                     d={totalPathD}
                                     fill="none"
-                                    stroke={totalSeries?.color ?? "#1a1a1a"}
+                                    stroke={totalSeries ? colorMap[totalSeries.id] : TOTAL_COLOR}
                                     strokeWidth={1.5}
                                     strokeLinejoin="round"
                                     strokeDasharray="4 2"
+                                />
+                            )}
+
+                            {epsPathD && (
+                                <path
+                                    d={epsPathD}
+                                    fill="none"
+                                    stroke={TOTAL_COLOR}
+                                    strokeWidth={1}
+                                    strokeLinejoin="round"
+                                    strokeDasharray="2 3"
                                 />
                             )}
 
@@ -473,33 +551,56 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
                                 const hx = xScale(hoveredPoint.date);
                                 const flipLeft = hx > innerWidth / 2;
 
-                                // compute tooltip text content
+                                // build structured rows: labelSign | labelName : valSign | valNum
                                 const dateStr = hoveredPoint.date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-                                const labelStrs = series.map(cfg => hoverLabel(cfg));
-                                const valueStrs = series.map(cfg => hoverValue(cfg, hoveredPoint.values[cfg.id] ?? 0));
-                                const colonStr = ":";
+                                const computedSum = stackSeries.reduce((acc, cfg) => {
+                                    const val = hoveredPoint.values[cfg.id] ?? 0;
+                                    return acc + (cfg.sign === 1 ? val : -val);
+                                }, 0);
+                                const eps = totalSeries
+                                    ? (hoveredPoint.values[totalSeries.id] ?? 0) - computedSum
+                                    : null;
 
-                                // measure each column independently so the colon aligns
-                                const maxLabelW = Math.max(...labelStrs.map(s => measureTextWidth(s, 12)));
-                                const colonW = measureTextWidth(colonStr, 12);
-                                const maxValueW = Math.max(...valueStrs.map(s => measureTextWidth(s, 12)));
-                                const seriesRowW = maxLabelW + colonW + TOOLTIP_COL_GAP + maxValueW;
-                                const contentW = Math.max(measureTextWidth(dateStr, 12), seriesRowW);
+                                type TRow = { key: string; labelSign: string; labelName: string; valSign: string; valNum: string };
+                                const rows: TRow[] = [
+                                    ...series.map((cfg, i) => {
+                                        const name = cfg.labelHover ?? cfg.label;
+                                        if (cfg.isTotal) return { key: cfg.id, labelSign: "=", labelName: name, valSign: "", valNum: formatHoverValue(computedSum) };
+                                        const formulaSign = cfg.sign === 1 ? "+" : "-";
+                                        const rawVal = hoveredPoint.values[cfg.id] ?? 0;
+                                        const isFirst = i === 0;
+                                        const dataSign = rawVal >= 0 ? "+" : "-";
+                                        return { key: cfg.id, labelSign: isFirst ? "" : formulaSign, labelName: name, valSign: isFirst ? (rawVal < 0 ? "-" : "") : dataSign, valNum: formatHoverValue(Math.abs(rawVal)) };
+                                    }),
+                                    ...(eps !== null ? [{ key: "ε", labelSign: "+", labelName: "ε", valSign: eps >= 0 ? "+" : "-", valNum: formatHoverValue(Math.abs(eps)) }] : []),
+                                ];
 
-                                const lastSeriesY = TOOLTIP_FIRST_SERIES_Y + (series.length - 1) * TOOLTIP_LINE_H;
-                                const contentH = lastSeriesY - TOOLTIP_DATE_Y + 12;
+                                // five-column measurements
+                                const GAP = 5;
+                                const signCharW = measureTextWidth("+", 12);
+                                const colonCharW = measureTextWidth(":", 12);
+                                const maxNameW = Math.max(...rows.map(r => measureTextWidth(r.labelName, 12)));
+                                const maxNumW = Math.max(...rows.map(r => measureTextWidth(r.valNum, 12)));
+                                // column x offsets relative to baseX
+                                const c1 = 0;                               // label sign
+                                const c2 = c1 + signCharW + GAP;            // label name
+                                const c3 = c2 + maxNameW + GAP;             // colon
+                                const c4 = c3 + colonCharW + GAP;           // value sign
+                                const c5 = c4 + signCharW + GAP;            // value number
+                                const rowsW = c5 + maxNumW;
+                                const contentW = Math.max(measureTextWidth(dateStr, 12), rowsW);
+
+                                const lastRowY = TOOLTIP_FIRST_SERIES_Y + (rows.length - 1) * TOOLTIP_LINE_H;
+                                const contentH = lastRowY - TOOLTIP_DATE_Y + 12;
                                 const rectH = contentH + TOOLTIP_PAD_Y * 2;
                                 const rectW = contentW + TOOLTIP_PAD_X * 2;
                                 const rectY = TOOLTIP_DATE_Y - TOOLTIP_PAD_Y;
 
-                                // textLeft: x coordinate of the content area's left edge
                                 const textLeft = flipLeft
                                     ? hx - 10 - contentW - TOOLTIP_PAD_X
                                     : hx + 10 - TOOLTIP_PAD_X;
                                 const rectX = textLeft;
-
-                                // colonX: x where label column ends and colon+value begins
-                                const colonX = textLeft + TOOLTIP_PAD_X + maxLabelW;
+                                const baseX = textLeft + TOOLTIP_PAD_X;
 
                                 const textProps = {
                                     fontFamily: "ui-serif, Georgia, serif" as const,
@@ -524,39 +625,41 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
                                             strokeWidth={0.5}
                                             rx={3}
                                         />
-                                        {/* date spans full width, left-aligned at content left */}
                                         <text
-                                            x={textLeft + TOOLTIP_PAD_X}
+                                            x={baseX + contentW / 2}
                                             y={TOOLTIP_DATE_Y}
-                                            textAnchor="start"
+                                            textAnchor="middle"
                                             dominantBaseline="hanging"
                                             {...textProps}
                                         >
                                             {dateStr}
                                         </text>
-                                        {/* series rows: label right-aligned at colonX, colon+value left-aligned after */}
-                                        {series.map((cfg, i) => (
-                                            <g key={cfg.id}>
-                                                <text
-                                                    x={colonX}
-                                                    y={TOOLTIP_FIRST_SERIES_Y + i * TOOLTIP_LINE_H}
-                                                    textAnchor="end"
-                                                    dominantBaseline="hanging"
-                                                    {...textProps}
-                                                >
-                                                    {labelStrs[i]}
-                                                </text>
-                                                <text
-                                                    x={colonX + TOOLTIP_COL_GAP / 2}
-                                                    y={TOOLTIP_FIRST_SERIES_Y + i * TOOLTIP_LINE_H}
-                                                    textAnchor="start"
-                                                    dominantBaseline="hanging"
-                                                    {...textProps}
-                                                >
-                                                    {colonStr} {valueStrs[i]}
-                                                </text>
-                                            </g>
-                                        ))}
+                                        {rows.map((row, i) => {
+                                            const y = TOOLTIP_FIRST_SERIES_Y + i * TOOLTIP_LINE_H;
+                                            return (
+                                                <g key={row.key}>
+                                                    {row.labelSign && (
+                                                        <text x={baseX + c1} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
+                                                            {row.labelSign}
+                                                        </text>
+                                                    )}
+                                                    <text x={baseX + c2} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
+                                                        {row.labelName}
+                                                    </text>
+                                                    <text x={baseX + c3} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
+                                                        :
+                                                    </text>
+                                                    {row.valSign && (
+                                                        <text x={baseX + c4} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
+                                                            {row.valSign}
+                                                        </text>
+                                                    )}
+                                                    <text x={baseX + c5} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
+                                                        {row.valNum}
+                                                    </text>
+                                                </g>
+                                            );
+                                        })}
                                     </g>
                                 );
                             })()}
@@ -583,8 +686,8 @@ export default function StackedChart({ series, title, cite }: StackedChartProps)
                 seasonalAdj={seasonalAdj}
                 frequency={frequency}
                 lastUpdated={lastUpdated}
-                seriesLinks={seriesLinks}
                 seriesLegend={seriesLegend}
+                epsFormula={epsFormula}
             />
         </div>
     );
