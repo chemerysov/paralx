@@ -1,7 +1,8 @@
 ---
 import Default from '../../layouts/Default.astro';
-import Math from '../../components/Math.astro';
-import Chart from '../../components/Chart';
+import Katex from '../../components/Katex.tsx';
+import LineChart from '../../components/charts/LineChart';
+import StackedChart from '../../components/charts/StackedChart.tsx';
 ---
 
 <Default
@@ -11,287 +12,356 @@ import Chart from '../../components/Chart';
 
 <article>
 
-    <h1>Keynesian Cross</h1>
+<h1>Keynesian Cross</h1>
 
-    <section>
-        <h2>Gross Domestic Product</h2>
+<section>
+    <h2>Gross Domestic Product</h2>
 
+    <p>
+        The exact wording of the definition of gross domestic product varies across institutions. But the core condensed definition is often as follows:
+    </p>
+    <dl>
+        <dt>gross domestic product</dt>
+        <dd>total monetary value of all final goods and services produced within a country's borders over a given period of time</dd>
+    </dl>
+    <details>
+        <summary>What are some of the institutional definitions?</summary>
+        <blockquote>
+            <p>
+                Gross domestic product (GDP) measures the value of final goods and services produced within the United States. Also known as value added, GDP is the value of goods and services produced by private industry and government, less the value of goods and services used up in production. GDP is also equal to the sum of personal consumption expenditures, gross private domestic investment, net exports of goods and services, and government consumption expenditures and gross investment.
+            </p>
+            <cite>&ndash; <a href="https://www.bea.gov/help/glossary/gross-domestic-product-gdp">The United States Bureau of Economic Analysis</a>; page last modified August 11, 2023</cite>
+        </blockquote>
+        <blockquote>
+            <p>
+                GDP measures the monetary value of final goods and services—that is, those that are bought by the final user—produced in a country in a given period of time (say a quarter or a year). It counts all of the output generated within the borders of a country. GDP is composed of goods and services produced for sale in the market and also includes some nonmarket production, such as defense or education services provided by the government.
+            </p>
+            <cite>&ndash; <a href="https://www.imf.org/en/publications/fandd/issues/series/back-to-basics/gross-domestic-product-gdp">International Monetary Fund</a>; page accessed April 30, 2026</cite>
+        </blockquote>
+        <blockquote>
+            <p>
+                Gross domestic product (GDP) is the standard measure of the value added created through the production of goods and services in a country during a certain period. Consequently, GDP also measures the income earned from that production, or the total amount spent on final goods and services (less imports).
+            </p>
+            <cite>&ndash; <a href="https://www.oecd.org/en/data/indicators/nominal-gross-domestic-product-gdp.html">Organisation for Economic Co-operation and Development</a>; page accessed April 30, 2026</cite>
+        </blockquote>
+    </details>
+    <details>
+        <summary>What does every part of the definition mean?</summary>
         <p>
-            The exact wording of the definition of gross domestic product varies across institutions. But the core condensed definition is often as follows:
+            <strong>Total monetary value.</strong> An economy produces an enormous variety of things: cars, surgical procedures, legal consultations, loaves of bread, software. These things are not naturally comparable to one another, and there is no obvious way to add them together into a single number. Money, specifically market prices, is the device that makes this addition possible. Each good or service gets converted into its price, and those prices, being all in the same units, can then be summed. GDP is therefore not a count of things produced; it is a sum of the monetary values of things produced.
         </p>
-
-        <dl>
-            <dt>gross domestic product</dt>
-            <dd>total monetary value of all final goods and services produced within a country's borders over a given period of time</dd>
-        </dl>
-
-        <details>
-            <summary>What are some of the institutional definitions?</summary>
-            <blockquote>
-                <p>
-                    Gross domestic product (GDP) measures the value of final goods and services produced within the United States. Also known as value added, GDP is the value of goods and services produced by private industry and government, less the value of goods and services used up in production. GDP is also equal to the sum of personal consumption expenditures, gross private domestic investment, net exports of goods and services, and government consumption expenditures and gross investment.
-                </p>
-                <cite>&ndash; <a href="https://www.bea.gov/help/glossary/gross-domestic-product-gdp">The United States Bureau of Economic Analysis</a>; page last modified August 11, 2023</cite>
-            </blockquote>
-            <blockquote>
-                <p>
-                    GDP measures the monetary value of final goods and services—that is, those that are bought by the final user—produced in a country in a given period of time (say a quarter or a year). It counts all of the output generated within the borders of a country. GDP is composed of goods and services produced for sale in the market and also includes some nonmarket production, such as defense or education services provided by the government.
-                </p>
-                <cite>&ndash; <a href="https://www.imf.org/en/publications/fandd/issues/series/back-to-basics/gross-domestic-product-gdp">International Monetary Fund</a>; page accessed April 30, 2026</cite>
-            </blockquote>
-            <blockquote>
-                <p>
-                    Gross domestic product (GDP) is the standard measure of the value added created through the production of goods and services in a country during a certain period. Consequently, GDP also measures the income earned from that production, or the total amount spent on final goods and services (less imports).
-                </p>
-                <cite>&ndash; <a href="https://www.oecd.org/en/data/indicators/nominal-gross-domestic-product-gdp.html">Organisation for Economic Co-operation and Development</a>; page accessed April 30, 2026</cite>
-            </blockquote>
-        </details>
-
-        <details>
-            <summary>What does every part of the definition mean?</summary>
-            <p>
-                <strong>Total monetary value.</strong> An economy produces an enormous variety of things: cars, surgical procedures, legal consultations, loaves of bread, software. These things are not naturally comparable to one another, and there is no obvious way to add them together into a single number. Money, specifically market prices, is the device that makes this addition possible. Each good or service gets converted into its price, and those prices, being all in the same units, can then be summed. GDP is therefore not a count of things produced; it is a sum of the monetary values of things produced.
-            </p>
-            <p>
-                <strong>Final.</strong> Not every monetary transaction is counted. When a steel manufacturer sells steel to a car manufacturer, and the car manufacturer then sells a car to a consumer, only the car sale enters GDP. The steel is an intermediate good, meaning it is a step along the way to producing something else rather than something consumed for its own sake. If both transactions were counted, the value of the steel would appear twice: once when sold to the car manufacturer, and again embedded in the price of the finished car. GDP restricts itself to goods and services purchased by their ultimate users in order to avoid this double-counting.
-            </p>
-            <p>
-                <strong>Goods and services.</strong> GDP counts both physical objects and intangible acts of provision. A manufactured car is a good; a legal consultation, a haircut, a hospital visit are services. The distinction matters practically because modern economies have shifted heavily toward services, but both categories enter GDP the same way, through the monetary value exchanged at the point of final sale.
-            </p>
-            <p>
-                <strong>Produced.</strong> GDP measures production, not mere exchange. If one person sells a used car to another, no new production has occurred, and the transaction does not enter GDP. What is being measured is the creation of new value, the act of making something that did not exist before or performing a service that was not yet rendered.
-            </p>
-            <p>
-                <strong>Within a country's borders.</strong> The word domestic defines the geographic boundary of what gets counted. GDP includes all production occurring inside a country's borders regardless of who owns the enterprise doing the producing. A factory located in the United States contributes to United States GDP whether it is owned by an American company or a foreign one. What matters is where the production physically takes place, not the nationality of the producer.
-            </p>
-            <p>
-                <strong>Over a given period of time.</strong> GDP is a flow, not a stock. It does not measure how much wealth exists at a particular moment; it measures how much productive activity occurred across a stretch of time, typically a calendar year or a fiscal quarter. A country's accumulated wealth could be enormous while its GDP in a given year is modest, or the reverse. The time dimension is not incidental; it is what makes GDP a measure of economic activity rather than economic magnitude.
-            </p>
-        </details>
-
-        <details>
-            <summary>What are some criticisms of every part of the definition?</summary>
-            <p>
-                <strong>Total monetary value.</strong> Using market prices as the universal conversion device means that anything without a market price is invisible to GDP. For example, unpaid domestic labor, subsistance farming, volunteer work is entirely excluded. Additionally, market prices reflect what things cost, not what they are worth in any broader sense. A barrel of oil extracted and burned enters GDP positively; the environmental damage it causes does not subtract from it, but the money spent cleaning up an oil spill does enter GDP positively. A counterargument is that GDP was never designed to measure welfare or sustainability; it was designed to measure market output, and criticizing it for not measuring what it was not built to measure may be asking the wrong question of the right tool. The Genuine Progress Indicator, or GPI, is one attempt to correct for this, adding the value of unpaid work and subtracting costs of crime, pollution, and inequality. The Human Development Index, produced by the United Nations, departs further, incorporating life expectancy and education outcomes alongside income.
-            </p>
-            <p>
-                <strong>Final.</strong> The distinction between final and intermediate is not clear once you consider expenditures that produce services over long stretches of time. Government expenditure on infrastructure, roads, bridges, ports, enters GDP as final expenditure in the year of construction, but infrastructure is in an important sense an intermediate input into all the private production that depends on it across the decades of its useful life. A trucking company's revenue enters GDP each year, but the road the truck drives on is counted as final in the year it was built. Consumer durables carry the same structure: a car purchased by a household enters GDP entirely in the year of purchase, but the transportation service it provides accrues across ten or fifteen years of use. A counterargument is that present value reasoning justifies the lump-sum treatment, that a purchase price in a functioning market reflects the discounted value of all future services the asset will provide, and so counting the full price at point of purchase is not obviously wrong. The difficulty is that GDP is also used as a high-frequency indicator of economic conditions, and the timing of when expenditures are recorded matters for detecting recessions and recoveries.
-            </p>
-            <p>
-                <strong>Goods and services.</strong> The category of what counts as a good or service has a production boundary that excludes large swaths of human activity. Leisure time is not counted, even though most people would consider having more of it an improvement in their circumstances. William Nordhaus and James Tobin proposed a Measure of Economic Welfare in 1972 that attempted to add the value of leisure and subtract what they called disamenities, the costs of urbanization, commuting, and pollution, from a GDP-like aggregate. The counterargument is that valuing leisure time introduces substantial methodological difficulties: leisure means different things to different people, its value is highly subjective, and any imputed price for it would be largely stipulated rather than observed. GDP's restriction to market transactions, whatever its limitations, at least rests on observable data.
-            </p>
-            <p>
-                <strong>Produced.</strong> GDP's focus on production means it is indifferent to whether what is produced is useful, harmful, or merely defensive. Military expenditure enters GDP the same way as hospital construction. The cost of incarcerating people enters GDP. So does the cost of treating preventable diseases. These are sometimes called defensive expenditures, and GDP counts them as straightforwardly positive contributions to output. There is also the question of quality versus quantity: GDP captures the monetary value of production but not improvements in the quality of goods at a given price, a problem that becomes acute with digital goods and services, many of which are provided at zero monetary cost to the consumer and therefore contribute little or nothing to measured GDP despite being widely used and highly valued. However, distinguishing productive from defensive spending requires normative judgments about what counts as a social problem and what counts as a genuine good; capturing quality improvements at a given price requires judgments about what constitutes equivalent value, and even statistical methods that try to estimate how much better a product has become and adjust its price accordingly address this only partially and under their own contested assumptions.
-            </p>
-            <p>
-                <strong>Within a country's borders.</strong> The geographic criterion produces significant distortions in countries with large foreign ownership of domestic production. Ireland is a frequently discussed example: multinational corporations, particularly American technology and pharmaceutical firms, book profits through Irish subsidiaries partly for tax reasons, which inflates Irish GDP relative to what Irish residents actually earn. More broadly, gross national income addresses part of this by switching from a geographic to a nationality-based criterion, counting income earned by a country's residents regardless of where production physically takes place. A separate issue is purchasing power parity, or PPP, adjustment, which does not change the domestic versus national distinction but corrects for the fact that a dollar of GDP in one country does not buy the same quantity of goods as a dollar of GDP in another, making raw GDP comparisons across countries misleading. The counterargument is that knowing the total value of production occurring within a territory is precisely what is useful, and alternative measures like GNI introduce their own complications around how to attribute the income of multinational firms operating across many jurisdictions.
-            </p>
-            <p>
-                <strong>Over a given period of time.</strong> Measuring a flow over a period says little about whether that flow is sustainable. A country can post high GDP in a given year by liquidating its natural resources, running down its infrastructure, or accumulating debt, activities that increase current output while depleting the stock of assets that future output depends on. GDP has no mechanism for registering this depletion. The World Bank's adjusted net savings measure, sometimes called genuine savings, attempts to correct for this by subtracting the depletion of natural capital and the damage from pollution, and adding investment in human capital. The counterargument on sustainability is that GDP was designed as a measure of current output, not a balance sheet of national wealth, and that tracking the depletion of natural and physical capital is a legitimate and important endeavor but a separate one, better addressed by complementary measures than by modifying GDP itself.
-            </p>
-        </details>
-
         <p>
-            GDP is not only a measure of output. The same quantity can be arrived at from three directions, each of which reflects a different economic reality:
+            <strong>Final.</strong> Not every monetary transaction is counted. When a steel manufacturer sells steel to a car manufacturer, and the car manufacturer then sells a car to a consumer, only the car sale enters GDP. The steel is an intermediate good, meaning it is a step along the way to producing something else rather than something consumed for its own sake. If both transactions were counted, the value of the steel would appear twice: once when sold to the car manufacturer, and again embedded in the price of the finished car. GDP restricts itself to goods and services purchased by their ultimate users in order to avoid this double-counting.
         </p>
-
-        <Math
-            formula="Y=Y_{\\text{production}}=Y_{\\text{expenditure}}=Y_{\\text{income}}"
-            display={true}
-        />
-
         <p>
-            Where <Math formula="Y" /> is GDP; <Math formula="Y_{\\text{production}}" /> is GDP measured as the sum of value added at each stage of production across all industries, counting only the new value created at each step to avoid double-counting intermediate goods; <Math formula="Y_{\\text{expenditure}}" /> is GDP measured as the total spending on final goods and services by households, firms, governments, and foreign buyers net of imports; and <Math formula="Y_{\\text{income}}" /> is GDP measured as the total income earned in the course of that production, including wages, profits, rents, and interest.
+            <strong>Goods and services.</strong> GDP counts both physical objects and intangible acts of provision. A manufactured car is a good; a legal consultation, a haircut, a hospital visit are services. The distinction matters practically because modern economies have shifted heavily toward services, but both categories enter GDP the same way, through the monetary value exchanged at the point of final sale.
         </p>
-
-        <details>
-            <summary>Why is GDP denoted <Math formula="Y" />?</summary>
-            <p>
-                The origin of the convention is not known with certainty. The earliest documented use appears in Kalecki's 1937 work, where income enters as <Math formula="Y = f(I)" />, income as a function of investment. The first formalizations of the IS-LM model that same year, by Hicks, Harrod, and Meade, used <Math formula="I" /> for national income instead. Cobb and Douglas in 1928 used <Math formula="P" /> for production. The letter <Math formula="I" /> was eventually claimed by investment, leaving income without its natural initial. Some suggest <Math formula="Y" /> stands for yield, a plausible mnemonic, though the word yield does not appear in standard usage to describe aggregate income. Others suggest <Math formula="Y" /> simply inherited the role of the generic dependent variable from the <Math formula="y = f(x)" /> convention in applied mathematics.
-            </p>
-        </details>
-
-        <details>
-            <summary>What does each approach measure and why?</summary>
-            <p>
-                <strong>The production approach</strong> measures GDP by summing the value added at each stage of production across every industry in the economy. Value added, at any given stage, is the difference between the revenue a producer earns from selling its output and the cost of the intermediate inputs it purchased to produce that output. A steel mill buys iron ore and energy, produces steel, and its value added is the difference between what it sells the steel for and what it paid for the ore and energy. Summing value added rather than total revenue is what prevents double-counting: the value of the iron ore is already embedded in the price of the steel, and summing both would count it twice. This approach is particularly useful for understanding the structure of an economy, which industries are growing, which are contracting, and how production is distributed across sectors.
-            </p>
-            <p>
-                <strong>The expenditure approach</strong> measures GDP by summing all spending on final goods and services over the period. It is the most commonly cited formulation and produces the expenditure identity, which decomposes GDP into four categories of spending: household consumption, private investment, government expenditure, and net exports, meaning exports minus imports. Imports are subtracted because they represent spending on goods produced outside the country's borders, which should not enter a measure of domestic production. This approach is useful because it reveals the demand side of the economy, showing which categories of spending are driving growth or contraction in a given period. We will look closely at this approach shortly.
-            </p>
-            <p>
-                <strong>The income approach</strong> measures GDP by summing all income earned in the course of producing the economy's output over the period. This includes wages paid to workers, profits earned by firms, rents earned by landowners, and interest earned by holders of capital. The logic is that every dollar of output produced must, by accounting necessity, become a dollar of income for someone: the revenue a firm earns from selling its output flows out as wages, rent, interest, and profit. This approach is useful for understanding the distribution of the economy's output across different types of income earners, and it is the basis for national income accounting, which tracks how the total product of the economy is divided between labor and capital.
-            </p>
-        </details>
-
-        <details>
-            <summary>Why are they equal?</summary>
-            <p>
-                The equality between the production and expenditure measures is definitional. Expenditure in the national accounts is defined to include not only purchases by final buyers but also unsold inventory, which is recorded as investment expenditure by the firm that produced it. With inventory treated this way, every unit of output is by definition matched by an equal unit of expenditure. The equality does not follow from how the economy behaves; it follows from the decision to define expenditure so that it covers the entirety of output.
-            </p>
-            <p>
-                The equality between the expenditure and income measures is equally definitional. Income in the national accounts is defined as the sum of all payments made to factors of production: wages, rent, interest, and profit. These categories are defined to be exhaustive, meaning every dollar of revenue a firm receives from selling its output is defined to flow out as one of these payment types. Given these definitions, every dollar of expenditure on final output is by definition a dollar of income for some factor of production.
-            </p>
-            <p>
-                The three-way equality is therefore an accounting identity rather than an equation. An equation asserts that two independently derived quantities happen to be equal; an identity asserts that two expressions are different ways of writing the same thing. <Math formula="Y_{\\text{production}} = Y_{\\text{expenditure}} = Y_{\\text{income}}" /> holds because output, expenditure, and income are defined such that they must refer to the same underlying quantity, not because the economy behaves in a particular way. In practice, the three measures do produce slightly different numbers when estimated from real data, due to measurement error and the imperfections of statistical collection, but the discrepancy is treated as a residual error rather than evidence against the identity.
-            </p>
-        </details>
-
-        <Chart series="GDPCA" client:visible />
-
-        <details>
-            <summary>Why is GDP in this chart labeled "real," and what are chained 2017 dollars?</summary>
-            <p>
-                GDP can be measured in two ways. Nominal GDP simply adds up the dollar value of everything produced using the prices of that moment, which means it rises both when the economy actually produces more and when prices rise due to inflation. Real GDP strips out price changes so that only genuine changes in output remain. If the economy produced the same quantity of goods this year as last year but prices rose ten percent, nominal GDP would appear to have grown while real GDP would stay flat.
-            </p>
-            <p>
-                Chained 2017 dollars is the specific method used here to make that adjustment. The figure for any given year is expressed in terms of what it would have been worth at 2017 price levels, so the dollar amounts on the chart are comparable across time in a way that raw dollar figures are not. The word chained refers to how the inflation adjustment is calculated: rather than fixing a single reference basket of goods and using it forever, the method updates the comparison year by year, which produces more accurate results as the composition of the economy shifts over time.
-            </p>
-        </details>
-
-        <details>
-            <summary>What would it mean for a metric to be seasonally adjusted?</summary>
-            <p>
-                Many economic activities follow predictable calendar rhythms that have nothing to do with the underlying condition of the economy. Retail spending reliably surges toward the end of the year. Construction reliably slows in winter. Without any correction, these patterns would show up in the data as apparent booms and contractions that repeat on schedule, making it difficult to tell whether something genuinely changed or whether the calendar turned. Seasonal adjustment tries to strip these predictable rhythms out so that what remains reflects actual shifts in economic activity rather than the time of year. The complication is that seasonal adjustment is not a neutral operation. It requires a model of what the seasonal pattern looks like, and that model involves assumptions that can be wrong, that vary across statistical agencies, and that are periodically revised as new data arrive. The adjusted figure is in this sense further from the raw observation than the unadjusted one: it contains more inferential steps, each of which introduces its own uncertainty. Whether the adjustment improves accuracy depends on whether the model of seasonality is itself accurate, which is not guaranteed.
-            </p>
-        </details>
-
-        <hr>
-
         <p>
-            The expenditure approach, which defines <Math formula="Y" /> as the sum of all spending on final goods and services, can be decomposed into five categories. This decomposition is the expenditure identity:
+            <strong>Produced.</strong> GDP measures production, not mere exchange. If one person sells a used car to another, no new production has occurred, and the transaction does not enter GDP. What is being measured is the creation of new value, the act of making something that did not exist before or performing a service that was not yet rendered.
         </p>
-
-        <Math
-            formula='Y=C+I+G+X-M'
-            display={true}
-        />
-
         <p>
-            Where <Math formula="C" /> is household consumption expenditure; <Math formula="I" /> is private investment, meaning spending by firms on capital goods such as machinery, equipment, and structures, as well as changes in business inventories; <Math formula="G" /> is government consumption expenditure and gross investment; <Math formula="X" /> is exports, meaning spending by foreign buyers on domestically produced goods and services; and <Math formula="M" /> is imports, meaning spending by domestic buyers on foreign-produced goods and services.
+            <strong>Within a country's borders.</strong> The word domestic defines the geographic boundary of what gets counted. GDP includes all production occurring inside a country's borders regardless of who owns the enterprise doing the producing. A factory located in the United States contributes to United States GDP whether it is owned by an American company or a foreign one. What matters is where the production physically takes place, not the nationality of the producer.
         </p>
-
-        <details>
-            <summary>How is every category defined?</summary>
-            <p>
-                <strong>Consumption (<Math formula="C" />)</strong> covers all spending by households on final goods and services. This includes durable goods such as vehicles and appliances, non-durable goods such as food and clothing, and services such as healthcare, education, and housing. Owner-occupied housing is a notable case: rather than counting the purchase of a home as consumption, national accounts treat it as investment and impute a rental value to it each period, counting that imputed rent as consumption of housing services. Consumption is typically the largest component of GDP in developed economies.
-            </p>
-            <p>
-                <strong>Investment (<Math formula="I" />)</strong> covers spending by firms on capital goods, meaning goods that are not consumed immediately but used to produce other goods and services over time. This includes machinery, equipment, software, and the construction of new structures. It also includes residential construction, meaning the building of new homes, which is treated as investment rather than consumption regardless of whether the buyer intends to live in the property or rent it out. A less intuitive inclusion is the change in business inventories: goods produced but not yet sold are counted as investment by the producing firm, which is what ensures the accounting identity between production and expenditure holds.
-            </p>
-            <p>
-                <strong>Government expenditure (<Math formula="G" />)</strong> covers spending by all levels of government on goods and services, including public sector wages, procurement of equipment, and construction of infrastructure. It does not include transfer payments such as pensions, unemployment benefits, or subsidies, because these are not payments for goods or services produced; they are redistributions of income from the government to households, and the spending they enable is captured when the recipient households spend the money, entering GDP as consumption.
-            </p>
-            <p>
-                <strong>Exports (<Math formula="X" />)</strong> covers spending by foreign buyers on goods and services produced domestically. When a German firm purchases American machinery, or a British tourist pays for a hotel in New York, those transactions represent demand for domestically produced output and are added to GDP. Exports are added because they represent production that occurred within the country's borders, demand for which originated outside them.
-            </p>
-            <p>
-                <strong>Imports (<Math formula="M" />)</strong> covers spending by domestic buyers on goods and services produced abroad. Imports are subtracted because the categories <Math formula="C" />, <Math formula="I" />, and <Math formula="G" /> are measured as total domestic spending, which includes spending on foreign-produced goods. A household buying a Japanese car contributes to <Math formula="C" /> as measured, but that car was not produced domestically and should not enter a measure of domestic output. Subtracting <Math formula="M" /> corrects for this: the net effect of the <Math formula="X - M" /> term is to add foreign demand for domestic production and remove domestic demand for foreign production, leaving only spending on goods and services that were actually produced within the country's borders.
-            </p>
-        </details>
-    </section>
-
-    <section>
-        <h2>Keynesian Cross Assumptions</h2>
-
         <p>
-            The Keynesian Cross model introduces a set of assumptions. The first concerns investment. In the expenditure identity, <Math formula="I" /> includes both intentional capital expenditure and unintentional inventory accumulation. The Keynesian Cross splits these apart:
+            <strong>Over a given period of time.</strong> GDP is a flow, not a stock. It does not measure how much wealth exists at a particular moment; it measures how much productive activity occurred across a stretch of time, typically a calendar year or a fiscal quarter. A country's accumulated wealth could be enormous while its GDP in a given year is modest, or the reverse. The time dimension is not incidental; it is what makes GDP a measure of economic activity rather than economic magnitude.
         </p>
-
-        <Math
-            formula='I=I_{\\text{planned}}+I_{\\text{unplanned}}'
-            display={true}
-        />
-
+    </details>
+    <details>
+        <summary>What are some criticisms of every part of the definition?</summary>
         <p>
-            Where <Math formula="I_{\\text{planned}}" /> is the investment firms intend to make, the deliberate purchase of capital goods and the conscious decision to build inventories. <Math formula="I_{\\text{unplanned}}" /> is the inventory change that occurs not by design but as a residual: when households buy less than firms expected, unsold goods accumulate as unplanned inventory investment; when households buy more than firms expected, inventories are drawn down, producing negative unplanned investment.
+            <strong>Total monetary value.</strong> Using market prices as the universal conversion device means that anything without a market price is invisible to GDP. For example, unpaid domestic labor, subsistance farming, volunteer work is entirely excluded. Additionally, market prices reflect what things cost, not what they are worth in any broader sense. A barrel of oil extracted and burned enters GDP positively; the environmental damage it causes does not subtract from it, but the money spent cleaning up an oil spill does enter GDP positively. A counterargument is that GDP was never designed to measure welfare or sustainability; it was designed to measure market output, and criticizing it for not measuring what it was not built to measure may be asking the wrong question of the right tool. The Genuine Progress Indicator, or GPI, is one attempt to correct for this, adding the value of unpaid work and subtracting costs of crime, pollution, and inequality. The Human Development Index, produced by the United Nations, departs further, incorporating life expectancy and education outcomes alongside income.
         </p>
-
-        <details>
-            <summary>What are some criticisms of the planned vs unplanned investment split assumption?</summary>
-            <p>
-                <strong>The boundary between planned and unplanned investment.</strong> The distinction between planned and unplanned investment can be unclear. In the model, unplanned investment is restricted to inventory accumulation, but it is unlikely that inventory is the only investment category subject to surprise. A firm that ordered machinery based on a demand forecast that turned out to be wrong has also made investment that, in retrospect, was miscalibrated to actual conditions, which would in some sense be unplanned capital goods. More broadly, firms probably do not operate with a binary of planned versus unplanned; what is more likely is forecasts, confidence intervals, and contingency buffers, meaning some inventory buildup in any period is anticipated as a statistical possibility even if the precise quantity is not. The defense of the simplification is that treating the inventory residual as the bearer of all expectational error is a clean way to close the accounting identity while preserving a mechanism for disequilibrium, even if the actual firm-level picture is more complicated.
-            </p>
-            <p>
-                <strong>Firms adjust continuously, not once per discrete period.</strong> The split also depends implicitly on a discrete time period, typically a quarter or a year, within which planning occurs and outcomes are observed. But firms observe inventory signals continuously, not once per period. Unplanned accumulation in the first weeks of a quarter might prompt production adjustments before the quarter closes, meaning what registers as unplanned in the aggregate accounts may already be partially corrected for within the period the model treats as a single unit. The defense is that all period models share this limitation and that the discrete period is a deliberate abstraction. However, this abstraction is more costly here than in some other models, because the adjustment mechanism of the Keynesian Cross depends specifically on firms reading inventory signals and responding.
-            </p>
-            <p>
-                <strong>The split encodes expectational error without modeling it.</strong> Beneath the inventory accounting, the planned/unplanned split is tracking something like the gap between expected demand and realized demand. Firms produce based on a forecast; actual sales either confirm or contradict it; the difference lands in inventories. The model encodes this expectational error as a residual rather than modeling the expectation formation process explicitly, which means it has nothing to say about how expectations are formed or revised in response to new information. The defense is that the Keynesian Cross is an entry-level framework and that modeling expectations explicitly is a substantial additional complexity with its own unresolved debates. However, the planned/unplanned split is where that omission is probably most consequential, since the entire adjustment mechanism rests on firms inferring the state of demand from inventory signals.
-            </p>
-            <p>
-                <strong>Inventory adjustment operates within physical bounds the model does not represent.</strong> Unplanned inventory depletion cannot exceed the stock on hand at the beginning of the period; a firm cannot sell from empty shelves. Accumulation is bounded above by available storage capacity. The model's adjustment mechanism therefore operates within constraints it does not represent. Beyond some threshold of depletion, the signal is not a gradual inventory drawdown but a stockout, which carries different and more disruptive implications for both the firm and its customers. The defense is that under normal economic conditions these bounds are not binding, and a model of typical fluctuations around equilibrium need not account for corner cases. However, the model is not a good fit for serious shortages or considerable overproduction.
-            </p>
-            <p>
-                <strong>The mechanism does not extend to services, which cannot be stored.</strong> The inventory adjustment mechanism only applies to goods that can be physically stored. Services cannot be inventoried. When demand for a haircut, a legal consultation, or a hospital visit falls short of what a firm anticipated, there is no accumulation of unsold output; the service simply does not occur and the revenue is lost. When demand exceeds expectations, the firm cannot draw down a reserve of pre-produced services; it either turns customers away or stretches capacity. The defense is that the Keynesian Cross was developed in an era when goods production was a substantially larger share of economic output, and that the model's assumptions were more defensible in that context. However, the model is not a good fit for service economies.
-            </p>
-        </details>
-
         <p>
-            Substituting this split back into the GDP expenditure identity replaces the single investment term with its two components:
+            <strong>Final.</strong> The distinction between final and intermediate is not clear once you consider expenditures that produce services over long stretches of time. Government expenditure on infrastructure, roads, bridges, ports, enters GDP as final expenditure in the year of construction, but infrastructure is in an important sense an intermediate input into all the private production that depends on it across the decades of its useful life. A trucking company's revenue enters GDP each year, but the road the truck drives on is counted as final in the year it was built. Consumer durables carry the same structure: a car purchased by a household enters GDP entirely in the year of purchase, but the transportation service it provides accrues across ten or fifteen years of use. A counterargument is that present value reasoning justifies the lump-sum treatment, that a purchase price in a functioning market reflects the discounted value of all future services the asset will provide, and so counting the full price at point of purchase is not obviously wrong. The difficulty is that GDP is also used as a high-frequency indicator of economic conditions, and the timing of when expenditures are recorded matters for detecting recessions and recoveries.
         </p>
-
-        <Math
-            formula="Y=C+I_{\\text{planned}}+I_{\\text{unplanned}}+G+X-M"
-            display={true}
-        />
-
         <p>
-            The second assumption concerns consumption <Math formula="C" />. Here the Keynesian Cross makes a behavioral claim: that aggregate consumption <Math formula="C" /> moves with aggregate income <Math formula="Y" />. Households that receive more income spend more; households that receive less spend less. The model does not yet specify the precise form of this relationship, but the foundational assumption is the proportionality itself:
+            <strong>Goods and services.</strong> The category of what counts as a good or service has a production boundary that excludes large swaths of human activity. Leisure time is not counted, even though most people would consider having more of it an improvement in their circumstances. William Nordhaus and James Tobin proposed a Measure of Economic Welfare in 1972 that attempted to add the value of leisure and subtract what they called disamenities, the costs of urbanization, commuting, and pollution, from a GDP-like aggregate. The counterargument is that valuing leisure time introduces substantial methodological difficulties: leisure means different things to different people, its value is highly subjective, and any imputed price for it would be largely stipulated rather than observed. GDP's restriction to market transactions, whatever its limitations, at least rests on observable data.
         </p>
-
-        <Math
-            formula='C\\sim Y'
-            display={true}
-        />
-
-        <details>
-            <summary>What are some criticisms of the proportionality assumption?</summary>
-            <p>
-                <strong>Households may consume based on expected lifetime income, not current income.</strong> The assumption that consumption <Math formula="C" /> moves with current income <Math formula="Y" /> implies that any change in income, whether permanent or temporary, produces a proportional change in spending. But households that can borrow and save have reason to spread consumption smoothly over their lifetimes rather than adjusting it sharply to each period's income. A household that receives a one-time windfall has more reason to save most of it than to spend it at the same rate it spends regular income; a household that suffers a temporary income drop has reason to draw on savings rather than cut spending proportionally. The defense is that not all households can borrow freely, and that for households living close to their income with little savings, current income probably is the binding constraint on spending. However, the model applies a single relationship to all households, which overstates the consumption response to temporary income changes and understates it for permanent ones.
-            </p>
-            <p>
-                <strong>Consumption depends on wealth as well as income.</strong> Two households with identical current income <Math formula="Y" /> but different accumulated assets will probably not consume the same amount. A household with substantial savings or property has resources to spend beyond what current income alone would imply. The model omits wealth entirely, treating the income flow as the sole determinant of consumption <Math formula="C" />. The defense is that wealth and income tend to be correlated in the aggregate, so omitting wealth may not seriously distort the broad relationship the model is trying to capture. However, this correlation breaks down during periods when asset prices move sharply without a corresponding move in current incomes.
-            </p>
-            <p>
-                <strong>Consumption may respond to expected future income rather than current income.</strong> If households are forward-looking, current income <Math formula="Y" /> matters less than expected income over coming periods. A household that anticipates a job loss may cut consumption before income actually falls; one that expects a raise may increase spending in advance. The model has no expectations channel: consumption <Math formula="C" /> responds only to income <Math formula="Y" /> as it currently stands. The defense is that current income remains a reasonable proxy for expected income under stable conditions. However, the assumption fails most visibly during periods of sharp expectational shifts, such as the onset of a recession, when consumption can fall faster than current income would predict.
-            </p>
-        </details>
-
         <p>
-            Within this proportionality, the model further assumes that the relationship is linear:
+            <strong>Produced.</strong> GDP's focus on production means it is indifferent to whether what is produced is useful, harmful, or merely defensive. Military expenditure enters GDP the same way as hospital construction. The cost of incarcerating people enters GDP. So does the cost of treating preventable diseases. These are sometimes called defensive expenditures, and GDP counts them as straightforwardly positive contributions to output. There is also the question of quality versus quantity: GDP captures the monetary value of production but not improvements in the quality of goods at a given price, a problem that becomes acute with digital goods and services, many of which are provided at zero monetary cost to the consumer and therefore contribute little or nothing to measured GDP despite being widely used and highly valued. However, distinguishing productive from defensive spending requires normative judgments about what counts as a social problem and what counts as a genuine good; capturing quality improvements at a given price requires judgments about what constitutes equivalent value, and even statistical methods that try to estimate how much better a product has become and adjust its price accordingly address this only partially and under their own contested assumptions.
         </p>
-
-        <Math
-            formula='C=a+b\\cdot Y'
-            display={true}
-        />
-
         <p>
-            Where <Math formula="a" />, called autonomous consumption, is the level of consumption that occurs regardless of income, and <Math formula="b" />, called the marginal propensity to consume, is the fraction of each additional unit of income <Math formula="Y" /> that households spend rather than save. The remainder <Math formula="1-b" />, the fraction saved rather than spent, is called the marginal propensity to save.
+            <strong>Within a country's borders.</strong> The geographic criterion produces significant distortions in countries with large foreign ownership of domestic production. Ireland is a frequently discussed example: multinational corporations, particularly American technology and pharmaceutical firms, book profits through Irish subsidiaries partly for tax reasons, which inflates Irish GDP relative to what Irish residents actually earn. More broadly, gross national income addresses part of this by switching from a geographic to a nationality-based criterion, counting income earned by a country's residents regardless of where production physically takes place. A separate issue is purchasing power parity, or PPP, adjustment, which does not change the domestic versus national distinction but corrects for the fact that a dollar of GDP in one country does not buy the same quantity of goods as a dollar of GDP in another, making raw GDP comparisons across countries misleading. The counterargument is that knowing the total value of production occurring within a territory is precisely what is useful, and alternative measures like GNI introduce their own complications around how to attribute the income of multinational firms operating across many jurisdictions.
         </p>
+        <p>
+            <strong>Over a given period of time.</strong> Measuring a flow over a period says little about whether that flow is sustainable. A country can post high GDP in a given year by liquidating its natural resources, running down its infrastructure, or accumulating debt, activities that increase current output while depleting the stock of assets that future output depends on. GDP has no mechanism for registering this depletion. The World Bank's adjusted net savings measure, sometimes called genuine savings, attempts to correct for this by subtracting the depletion of natural capital and the damage from pollution, and adding investment in human capital. The counterargument on sustainability is that GDP was designed as a measure of current output, not a balance sheet of national wealth, and that tracking the depletion of natural and physical capital is a legitimate and important endeavor but a separate one, better addressed by complementary measures than by modifying GDP itself.
+        </p>
+    </details>
 
-        <details>
-            <summary>What are some criticisms of the linearity assumption?</summary>
-            <p>
-                <strong>The fraction of income spent probably varies with how much income a household has.</strong> The linear form assigns a single fixed coefficient <Math formula="b" /> to the relationship between income <Math formula="Y" /> and consumption <Math formula="C" />, implying that a household spending half of each additional unit of income does so whether that unit arrives at low income or high income. In practice, lower-income households tend to spend a higher fraction of additional income than higher-income households, who save more as income rises. A single <Math formula="b" /> conceals this variation, meaning the model's predicted consumption response depends on which households receive an income change in ways the model cannot represent. The defense is that for aggregate analysis, an average <Math formula="b" /> may be a serviceable approximation when the income distribution is stable. However, the approximation becomes unreliable when evaluating policies whose effects are concentrated at particular income levels.
-            </p>
-            <p>
-                <strong>The fraction of income spent probably varies with the source and perceived permanence of that income.</strong> The model treats all income <Math formula="Y" /> as equivalent in its effect on consumption <Math formula="C" />, but households may consume at different rates depending on whether additional income arrives as wages, a one-time transfer, a capital gain, or an inheritance. Income perceived as permanent may be spent more freely than income perceived as temporary or uncertain. A fixed <Math formula="b" /> cannot distinguish between these cases and will mispredict consumption responses whenever the composition or perceived character of income changes. The defense is that in normal conditions, the composition of income is sufficiently stable that a single coefficient captures the dominant relationship. However, it becomes a poor fit for episodes like one-time stimulus payments, where the temporary character of income is salient to recipients.
-            </p>
-            <p>
-                <strong>The autonomous component is not truly autonomous.</strong> The intercept <Math formula="a" /> represents consumption that occurs regardless of income, covering necessities, habitual spending, and spending financed by borrowing or drawing down savings. The model treats <Math formula="a" /> as a fixed parameter, but it probably shifts with credit availability, interest rates, accumulated wealth, and consumer confidence. Treating it as a constant absorbs all of this variation into a single number and then ignores how it moves. The defense is that holding <Math formula="a" /> fixed is a simplification appropriate for short-run analysis where these background conditions are approximately stable. However, treating it as structurally fixed rather than variable conflates a simplifying assumption with a behavioral claim.
-            </p>
-            <p>
-                <strong>Aggregate linearity does not follow from household-level linearity.</strong> Even if each individual household had a linear consumption function, the aggregate relationship between total consumption <Math formula="C" /> and total income <Math formula="Y" /> would not necessarily be linear, because the distribution of income across households matters. If the fraction of income spent varies across income levels, then a redistribution of income between households changes aggregate consumption even with no change in aggregate income <Math formula="Y" />. The linear aggregate form cannot represent this. The defense is that if the income distribution is stable, distributional effects wash out of aggregate relationships and the linear approximation holds. However, the distribution of income is not always stable, and the model provides no way to detect when this condition fails.
-            </p>
-        </details>
-        <details>
-            <summary>Why do the marginal propensity to consume and the marginal propensity to save add up to one?</summary>
-            <p>
-                The two sum to one by definition: an additional unit of income can only do two things, be spent or be saved, and there is no third option. If a household spends a fraction <Math formula="b" /> of each additional unit of income <Math formula="Y" />, the remaining fraction <Math formula="1-b" /> is by definition saved. The two exhaust all possibilities. This binary is more robust than it might initially appear. Paying down a debt is saving: the household is reducing a liability rather than acquiring goods or services, and the net effect on its financial position is the same as accumulating an asset. Buying stocks, bonds, or property is saving: these are allocations of income to future rather than current use. Making a gift or charitable donation counts as consumption from the giver's perspective: the income was voluntarily directed toward a use, which is what consumption means in this accounting. Holding cash under a mattress is saving. The categories are defined to be exhaustive: consumption is income spent on goods and services for current use, and saving is everything else.
-            </p>
-        </details>
-    </section>
+    <p>
+        GDP is not only a measure of output. The same quantity can be arrived at from three directions, each of which reflects a different economic reality:
+    </p>
+    <Katex
+        formula="Y=Y_{\\text{production}}=Y_{\\text{expenditure}}=Y_{\\text{income}}"
+        display={true}
+    />
+    <p>
+        Where <Katex formula="Y" /> is GDP; <Katex formula="Y_{\\text{production}}" /> is GDP measured as the sum of value added at each stage of production across all industries, counting only the new value created at each step to avoid double-counting intermediate goods; <Katex formula="Y_{\\text{expenditure}}" /> is GDP measured as the total spending on final goods and services by households, firms, governments, and foreign buyers net of imports; and <Katex formula="Y_{\\text{income}}" /> is GDP measured as the total income earned in the course of that production, including wages, profits, rents, and interest.
+    </p>
+    <details>
+        <summary>Why is GDP denoted <Katex formula="Y" />?</summary>
+        <p>
+            The origin of the convention is not known with certainty. The earliest documented use appears in Kalecki's 1937 work, where income enters as <Katex formula="Y = f(I)" />, income as a function of investment. The first formalizations of the IS-LM model that same year, by Hicks, Harrod, and Meade, used <Katex formula="I" /> for national income instead. Cobb and Douglas in 1928 used <Katex formula="P" /> for production. The letter <Katex formula="I" /> was eventually claimed by investment, leaving income without its natural initial. Some suggest <Katex formula="Y" /> stands for yield, a plausible mnemonic, though the word yield does not appear in standard usage to describe aggregate income. Others suggest <Katex formula="Y" /> simply inherited the role of the generic dependent variable from the <Katex formula="y = f(x)" /> convention in applied mathematics.
+        </p>
+    </details>
+    <details>
+        <summary>What does each approach measure and why?</summary>
+        <p>
+            <strong>The production approach</strong> measures GDP by summing the value added at each stage of production across every industry in the economy. Value added, at any given stage, is the difference between the revenue a producer earns from selling its output and the cost of the intermediate inputs it purchased to produce that output. A steel mill buys iron ore and energy, produces steel, and its value added is the difference between what it sells the steel for and what it paid for the ore and energy. Summing value added rather than total revenue is what prevents double-counting: the value of the iron ore is already embedded in the price of the steel, and summing both would count it twice. This approach is particularly useful for understanding the structure of an economy, which industries are growing, which are contracting, and how production is distributed across sectors.
+        </p>
+        <p>
+            <strong>The expenditure approach</strong> measures GDP by summing all spending on final goods and services over the period. It is the most commonly cited formulation and produces the expenditure identity, which decomposes GDP into four categories of spending: household consumption, private investment, government expenditure, and net exports, meaning exports minus imports. Imports are subtracted because they represent spending on goods produced outside the country's borders, which should not enter a measure of domestic production. This approach is useful because it reveals the demand side of the economy, showing which categories of spending are driving growth or contraction in a given period. We will look closely at this approach shortly.
+        </p>
+        <p>
+            <strong>The income approach</strong> measures GDP by summing all income earned in the course of producing the economy's output over the period. This includes wages paid to workers, profits earned by firms, rents earned by landowners, and interest earned by holders of capital. The logic is that every dollar of output produced must, by accounting necessity, become a dollar of income for someone: the revenue a firm earns from selling its output flows out as wages, rent, interest, and profit. This approach is useful for understanding the distribution of the economy's output across different types of income earners, and it is the basis for national income accounting, which tracks how the total product of the economy is divided between labor and capital.
+        </p>
+    </details>
+    <details>
+        <summary>Why are they equal?</summary>
+        <p>
+            The equality between the production and expenditure measures is definitional. Expenditure in the national accounts is defined to include not only purchases by final buyers but also unsold inventory, which is recorded as investment expenditure by the firm that produced it. With inventory treated this way, every unit of output is by definition matched by an equal unit of expenditure. The equality does not follow from how the economy behaves; it follows from the decision to define expenditure so that it covers the entirety of output.
+        </p>
+        <p>
+            The equality between the expenditure and income measures is equally definitional. Income in the national accounts is defined as the sum of all payments made to factors of production: wages, rent, interest, and profit. These categories are defined to be exhaustive, meaning every dollar of revenue a firm receives from selling its output is defined to flow out as one of these payment types. Given these definitions, every dollar of expenditure on final output is by definition a dollar of income for some factor of production.
+        </p>
+        <p>
+            The three-way equality is therefore an accounting identity rather than an equation. An equation asserts that two independently derived quantities happen to be equal; an identity asserts that two expressions are different ways of writing the same thing. <Katex formula="Y_{\\text{production}} = Y_{\\text{expenditure}} = Y_{\\text{income}}" /> holds because output, expenditure, and income are defined such that they must refer to the same underlying quantity, not because the economy behaves in a particular way. In practice, the three measures do produce slightly different numbers when estimated from real data, due to measurement error and the imperfections of statistical collection, but the discrepancy is treated as a residual error rather than evidence against the identity.
+        </p>
+    </details>
+
+    <LineChart
+        series="GDPCA"
+        titleFormula="Y"
+        client:visible
+    />
+    <details>
+        <summary>Why is GDP in this chart labeled "real," and what are chained 2017 dollars?</summary>
+        <p>
+            GDP can be measured in two ways. Nominal GDP simply adds up the dollar value of everything produced using the prices of that moment, which means it rises both when the economy actually produces more and when prices rise due to inflation. Real GDP strips out price changes so that only genuine changes in output remain. If the economy produced the same quantity of goods this year as last year but prices rose ten percent, nominal GDP would appear to have grown while real GDP would stay flat.
+        </p>
+        <p>
+            Chained 2017 dollars is the specific method used here to make that adjustment. The figure for any given year is expressed in terms of what it would have been worth at 2017 price levels, so the dollar amounts on the chart are comparable across time in a way that raw dollar figures are not. The word chained refers to how the inflation adjustment is calculated: rather than fixing a single reference basket of goods and using it forever, the method updates the comparison year by year, which produces more accurate results as the composition of the economy shifts over time.
+        </p>
+    </details>
+    <details>
+        <summary>What would it mean for a metric to be seasonally adjusted?</summary>
+        <p>
+            Many economic activities follow predictable calendar rhythms that have nothing to do with the underlying condition of the economy. Retail spending reliably surges toward the end of the year. Construction reliably slows in winter. Without any correction, these patterns would show up in the data as apparent booms and contractions that repeat on schedule, making it difficult to tell whether something genuinely changed or whether the calendar turned. Seasonal adjustment tries to strip these predictable rhythms out so that what remains reflects actual shifts in economic activity rather than the time of year. The complication is that seasonal adjustment is not a neutral operation. It requires a model of what the seasonal pattern looks like, and that model involves assumptions that can be wrong, that vary across statistical agencies, and that are periodically revised as new data arrive. The adjusted figure is in this sense further from the raw observation than the unadjusted one: it contains more inferential steps, each of which introduces its own uncertainty. Whether the adjustment improves accuracy depends on whether the model of seasonality is itself accurate, which is not guaranteed.
+        </p>
+    </details>
+    <hr />
+
+    <p>
+        The expenditure approach, which defines <Katex formula="Y" /> as the sum of all spending on final goods and services, can be decomposed into five categories. This decomposition is the expenditure identity:
+    </p>
+    <Katex
+        formula='Y=C+I+G+X-M'
+        display={true}
+    />
+    <p>
+        Where <Katex formula="C" /> is household consumption expenditure; <Katex formula="I" /> is private investment, meaning spending by firms on capital goods such as machinery, equipment, and structures, as well as changes in business inventories; <Katex formula="G" /> is government consumption expenditure and gross investment; <Katex formula="X" /> is exports, meaning spending by foreign buyers on domestically produced goods and services; and <Katex formula="M" /> is imports, meaning spending by domestic buyers on foreign-produced goods and services.
+    </p>
+    <details>
+        <summary>How is every category defined?</summary>
+        <p>
+            <strong>Consumption (<Katex formula="C" />)</strong> covers all spending by households on final goods and services. This includes durable goods such as vehicles and appliances, non-durable goods such as food and clothing, and services such as healthcare, education, and housing. Owner-occupied housing is a notable case: rather than counting the purchase of a home as consumption, national accounts treat it as investment and impute a rental value to it each period, counting that imputed rent as consumption of housing services. Consumption is typically the largest component of GDP in developed economies.
+        </p>
+        <p>
+            <strong>Investment (<Katex formula="I" />)</strong> covers spending by firms on capital goods, meaning goods that are not consumed immediately but used to produce other goods and services over time. This includes machinery, equipment, software, and the construction of new structures. It also includes residential construction, meaning the building of new homes, which is treated as investment rather than consumption regardless of whether the buyer intends to live in the property or rent it out. A less intuitive inclusion is the change in business inventories: goods produced but not yet sold are counted as investment by the producing firm, which is what ensures the accounting identity between production and expenditure holds.
+        </p>
+        <p>
+            <strong>Government expenditure (<Katex formula="G" />)</strong> covers spending by all levels of government on goods and services, including public sector wages, procurement of equipment, and construction of infrastructure. It does not include transfer payments such as pensions, unemployment benefits, or subsidies, because these are not payments for goods or services produced; they are redistributions of income from the government to households, and the spending they enable is captured when the recipient households spend the money, entering GDP as consumption.
+        </p>
+        <p>
+            <strong>Exports (<Katex formula="X" />)</strong> covers spending by foreign buyers on goods and services produced domestically. When a German firm purchases American machinery, or a British tourist pays for a hotel in New York, those transactions represent demand for domestically produced output and are added to GDP. Exports are added because they represent production that occurred within the country's borders, demand for which originated outside them.
+        </p>
+        <p>
+            <strong>Imports (<Katex formula="M" />)</strong> covers spending by domestic buyers on goods and services produced abroad. Imports are subtracted because the categories <Katex formula="C" />, <Katex formula="I" />, and <Katex formula="G" /> are measured as total domestic spending, which includes spending on foreign-produced goods. A household buying a Japanese car contributes to <Katex formula="C" /> as measured, but that car was not produced domestically and should not enter a measure of domestic output. Subtracting <Katex formula="M" /> corrects for this: the net effect of the <Katex formula="X - M" /> term is to add foreign demand for domestic production and remove domestic demand for foreign production, leaving only spending on goods and services that were actually produced within the country's borders.
+        </p>
+    </details>
+
+    <StackedChart
+        title="GDP by Expenditure Component"
+        series={[
+            { id: "PCEC96",  label: "C", labelHover: "C", color: "#8b7355", sign: 1              },
+            { id: "GPDIC1",  label: "I", labelHover: "I", color: "#4a6741", sign: 1              },
+            { id: "GCEC1",   label: "G", labelHover: "G", color: "#3d5a6b", sign: 1              },
+            { id: "EXPGSC1", label: "X", labelHover: "X", color: "#7a5c7a", sign: 1              },
+            { id: "IMPGSC1", label: "M", labelHover: "M", color: "#b5564e", sign: -1             },
+            { id: "GDPC1",   label: "Y", labelHover: "Y",                   sign: 1, isTotal: true },
+        ]}
+        client:visible
+    />
+    <details>
+		<summary>Some of these Federal Reserve labels do not quite match the labels as we have discussed them so far. Why?</summary>
+		<p>
+			<strong>Consumption is labeled personal because business consumption is handled differently.</strong> Businesses consume things too: they buy materials, supplies, and services in the course of production. But these are intermediate goods, inputs that get used up in making something else, and GDP excludes them to avoid counting the same value twice. What remains in <Katex formula="C" /> is consumption by households, which national accountants call personal consumption to distinguish it from the intermediate consumption of firms. The personal qualifier is not a narrowing of the concept but a clarification of whose final spending is being counted.
+		</p>
+		<p>
+			<strong>Investment is private and domestic because government investment is separated out, and because the geographic boundary matters.</strong> The private qualifier excludes government capital expenditure, which appears separately in <Katex formula="G" />. The domestic qualifier reflects the same geographic logic as GDP itself: it counts investment occurring within the country's borders regardless of who owns the investing entity. A foreign firm building a factory domestically contributes to domestic investment; a domestic firm building abroad does not. Gross, as opposed to net, means depreciation is not subtracted. Existing capital wears out continuously, and net investment would subtract this wearing-out to isolate only additions to the capital stock. The gross figure is used partly because depreciation is difficult to measure precisely and partly because gross investment captures all new spending on capital, which is what matters for demand in the short-run framework.
+		</p>
+		<p>
+			<strong>Government spending is split into consumption and investment because not all government expenditure is the same kind of spending.</strong> Day-to-day government outlays on salaries, supplies, and services are consumed immediately, in the same sense that a household consuming a meal consumes it. Government spending on roads, buildings, and equipment provides services over many years and is therefore investment in the same sense that private capital expenditure is. The Federal Reserve labels these separately because they have different long-run implications. The Keynesian Cross aggregates them into a single <Katex formula="G" /> because the model is concerned only with the total volume of demand they generate in the current period, not with whether that demand is for immediate consumption or durable capital formation.
+		</p>
+	</details>
+    <details>
+		<summary>The data here is monthly, and yet the numbers match annual GDP figures. Why?</summary>
+		<p>
+			Each monthly observation is expressed as an annual rate, which is essentially what the total would be if that month's pace of activity continued uninterrupted for a full year. In practice this means each monthly figure is scaled up by a factor of twelve. So a month in which real GDP runs at roughly two trillion dollars in chained 2017 dollars is reported as approximately twenty-four trillion at an annual rate, which is consistent with the annual figures typically cited. The same scaling applies to every component, which is why the components still sum to the GDP figure despite the monthly frequency.
+		</p>
+	</details>
+</section>
+
+<section>
+    <h2>Keynesian Cross Assumptions</h2>
+
+    <p>
+        The Keynesian Cross model introduces a set of assumptions. The first concerns investment. In the expenditure identity, <Katex formula="I" /> includes both intentional capital expenditure and unintentional inventory accumulation. The Keynesian Cross splits these apart:
+    </p>
+    <Katex
+        formula='I=I_{\\text{planned}}+I_{\\text{unplanned}}'
+        display={true}
+    />
+    <p>
+        Where <Katex formula="I_{\\text{planned}}" /> is the investment firms intend to make, the deliberate purchase of capital goods and the conscious decision to build inventories. <Katex formula="I_{\\text{unplanned}}" /> is the inventory change that occurs not by design but as a residual: when households buy less than firms expected, unsold goods accumulate as unplanned inventory investment; when households buy more than firms expected, inventories are drawn down, producing negative unplanned investment.
+    </p>
+    <details>
+        <summary>What are some criticisms of the planned vs unplanned investment split assumption?</summary>
+        <p>
+            <strong>The boundary between planned and unplanned investment.</strong> The distinction between planned and unplanned investment can be unclear. In the model, unplanned investment is restricted to inventory accumulation, but it is unlikely that inventory is the only investment category subject to surprise. A firm that ordered machinery based on a demand forecast that turned out to be wrong has also made investment that, in retrospect, was miscalibrated to actual conditions, which would in some sense be unplanned capital goods. More broadly, firms probably do not operate with a binary of planned versus unplanned; what is more likely is forecasts, confidence intervals, and contingency buffers, meaning some inventory buildup in any period is anticipated as a statistical possibility even if the precise quantity is not. The defense of the simplification is that treating the inventory residual as the bearer of all expectational error is a clean way to close the accounting identity while preserving a mechanism for disequilibrium, even if the actual firm-level picture is more complicated.
+        </p>
+        <p>
+            <strong>Firms adjust continuously, not once per discrete period.</strong> The split also depends implicitly on a discrete time period, typically a quarter or a year, within which planning occurs and outcomes are observed. But firms observe inventory signals continuously, not once per period. Unplanned accumulation in the first weeks of a quarter might prompt production adjustments before the quarter closes, meaning what registers as unplanned in the aggregate accounts may already be partially corrected for within the period the model treats as a single unit. The defense is that all period models share this limitation and that the discrete period is a deliberate abstraction. However, this abstraction is more costly here than in some other models, because the adjustment mechanism of the Keynesian Cross depends specifically on firms reading inventory signals and responding.
+        </p>
+        <p>
+            <strong>The split encodes expectational error without modeling it.</strong> Beneath the inventory accounting, the planned/unplanned split is tracking something like the gap between expected demand and realized demand. Firms produce based on a forecast; actual sales either confirm or contradict it; the difference lands in inventories. The model encodes this expectational error as a residual rather than modeling the expectation formation process explicitly, which means it has nothing to say about how expectations are formed or revised in response to new information. The defense is that the Keynesian Cross is an entry-level framework and that modeling expectations explicitly is a substantial additional complexity with its own unresolved debates. However, the planned/unplanned split is where that omission is probably most consequential, since the entire adjustment mechanism rests on firms inferring the state of demand from inventory signals.
+        </p>
+        <p>
+            <strong>Inventory adjustment operates within physical bounds the model does not represent.</strong> Unplanned inventory depletion cannot exceed the stock on hand at the beginning of the period; a firm cannot sell from empty shelves. Accumulation is bounded above by available storage capacity. The model's adjustment mechanism therefore operates within constraints it does not represent. Beyond some threshold of depletion, the signal is not a gradual inventory drawdown but a stockout, which carries different and more disruptive implications for both the firm and its customers. The defense is that under normal economic conditions these bounds are not binding, and a model of typical fluctuations around equilibrium need not account for corner cases. However, the model is not a good fit for serious shortages or considerable overproduction.
+        </p>
+        <p>
+            <strong>The mechanism does not extend to services, which cannot be stored.</strong> The inventory adjustment mechanism only applies to goods that can be physically stored. Services cannot be inventoried. When demand for a haircut, a legal consultation, or a hospital visit falls short of what a firm anticipated, there is no accumulation of unsold output; the service simply does not occur and the revenue is lost. When demand exceeds expectations, the firm cannot draw down a reserve of pre-produced services; it either turns customers away or stretches capacity. The defense is that the Keynesian Cross was developed in an era when goods production was a substantially larger share of economic output, and that the model's assumptions were more defensible in that context. However, the model is not a good fit for service economies.
+        </p>
+    </details>
+    <p>
+        Substituting this split back into the GDP expenditure identity replaces the single investment term with its two components:
+    </p>
+    <Katex
+        formula="Y=C+\\underbrace{I_{\\text{planned}}+I_{\\text{unplanned}}}_I+G+X-M"
+        display={true}
+    />
+    <hr />
+
+    <p>
+        The second assumption concerns consumption <Katex formula="C" />. Here the Keynesian Cross makes a behavioral claim: that aggregate consumption <Katex formula="C" /> moves with aggregate income <Katex formula="Y" />. Households that receive more income spend more; households that receive less spend less. The model does not yet specify the precise form of this relationship, but the foundational assumption is the proportionality itself:
+    </p>
+    <Katex
+        formula='C\\sim Y'
+        display={true}
+    />
+    <details>
+        <summary>What are some criticisms of the proportionality assumption?</summary>
+        <p>
+            <strong>Households may consume based on expected lifetime income, not current income.</strong> The assumption that consumption <Katex formula="C" /> moves with current income <Katex formula="Y" /> implies that any change in income, whether permanent or temporary, produces a proportional change in spending. But households that can borrow and save have reason to spread consumption smoothly over their lifetimes rather than adjusting it sharply to each period's income. A household that receives a one-time windfall has more reason to save most of it than to spend it at the same rate it spends regular income; a household that suffers a temporary income drop has reason to draw on savings rather than cut spending proportionally. The defense is that not all households can borrow freely, and that for households living close to their income with little savings, current income probably is the binding constraint on spending. However, the model applies a single relationship to all households, which overstates the consumption response to temporary income changes and understates it for permanent ones.
+        </p>
+        <p>
+            <strong>Consumption depends on wealth as well as income.</strong> Two households with identical current income <Katex formula="Y" /> but different accumulated assets will probably not consume the same amount. A household with substantial savings or property has resources to spend beyond what current income alone would imply. The model omits wealth entirely, treating the income flow as the sole determinant of consumption <Katex formula="C" />. The defense is that wealth and income tend to be correlated in the aggregate, so omitting wealth may not seriously distort the broad relationship the model is trying to capture. However, this correlation breaks down during periods when asset prices move sharply without a corresponding move in current incomes.
+        </p>
+        <p>
+            <strong>Consumption may respond to expected future income rather than current income.</strong> If households are forward-looking, current income <Katex formula="Y" /> matters less than expected income over coming periods. A household that anticipates a job loss may cut consumption before income actually falls; one that expects a raise may increase spending in advance. The model has no expectations channel: consumption <Katex formula="C" /> responds only to income <Katex formula="Y" /> as it currently stands. The defense is that current income remains a reasonable proxy for expected income under stable conditions. However, the assumption fails most visibly during periods of sharp expectational shifts, such as the onset of a recession, when consumption can fall faster than current income would predict.
+        </p>
+    </details>
+
+    <p>
+        Within this proportionality, the model further assumes that the relationship is linear:
+    </p>
+    <Katex
+        formula='C=a+b\\cdot Y'
+        display={true}
+    />
+    <p>
+        Where <Katex formula="a" />, called autonomous consumption, is the level of consumption that occurs regardless of income, and <Katex formula="b" />, called the marginal propensity to consume, is the fraction of each additional unit of income <Katex formula="Y" /> that households spend rather than save. The remainder <Katex formula="1-b" />, the fraction saved rather than spent, is called the marginal propensity to save.
+    </p>
+    <details>
+        <summary>What are some criticisms of the linearity assumption?</summary>
+        <p>
+            <strong>The fraction of income spent probably varies with how much income a household has.</strong> The linear form assigns a single fixed coefficient <Katex formula="b" /> to the relationship between income <Katex formula="Y" /> and consumption <Katex formula="C" />, implying that a household spending half of each additional unit of income does so whether that unit arrives at low income or high income. In practice, lower-income households tend to spend a higher fraction of additional income than higher-income households, who save more as income rises. A single <Katex formula="b" /> conceals this variation, meaning the model's predicted consumption response depends on which households receive an income change in ways the model cannot represent. The defense is that for aggregate analysis, an average <Katex formula="b" /> may be a serviceable approximation when the income distribution is stable. However, the approximation becomes unreliable when evaluating policies whose effects are concentrated at particular income levels.
+        </p>
+        <p>
+            <strong>The fraction of income spent probably varies with the source and perceived permanence of that income.</strong> The model treats all income <Katex formula="Y" /> as equivalent in its effect on consumption <Katex formula="C" />, but households may consume at different rates depending on whether additional income arrives as wages, a one-time transfer, a capital gain, or an inheritance. Income perceived as permanent may be spent more freely than income perceived as temporary or uncertain. A fixed <Katex formula="b" /> cannot distinguish between these cases and will mispredict consumption responses whenever the composition or perceived character of income changes. The defense is that in normal conditions, the composition of income is sufficiently stable that a single coefficient captures the dominant relationship. However, it becomes a poor fit for episodes like one-time stimulus payments, where the temporary character of income is salient to recipients.
+        </p>
+        <p>
+            <strong>The autonomous component is not truly autonomous.</strong> The intercept <Katex formula="a" /> represents consumption that occurs regardless of income, covering necessities, habitual spending, and spending financed by borrowing or drawing down savings. The model treats <Katex formula="a" /> as a fixed parameter, but it probably shifts with credit availability, interest rates, accumulated wealth, and consumer confidence. Treating it as a constant absorbs all of this variation into a single number and then ignores how it moves. The defense is that holding <Katex formula="a" /> fixed is a simplification appropriate for short-run analysis where these background conditions are approximately stable. However, treating it as structurally fixed rather than variable conflates a simplifying assumption with a behavioral claim.
+        </p>
+        <p>
+            <strong>Aggregate linearity does not follow from household-level linearity.</strong> Even if each individual household had a linear consumption function, the aggregate relationship between total consumption <Katex formula="C" /> and total income <Katex formula="Y" /> would not necessarily be linear, because the distribution of income across households matters. If the fraction of income spent varies across income levels, then a redistribution of income between households changes aggregate consumption even with no change in aggregate income <Katex formula="Y" />. The linear aggregate form cannot represent this. The defense is that if the income distribution is stable, distributional effects wash out of aggregate relationships and the linear approximation holds. However, the distribution of income is not always stable, and the model provides no way to detect when this condition fails.
+        </p>
+    </details>
+    <details>
+        <summary>Why do the marginal propensity to consume and the marginal propensity to save add up to one?</summary>
+        <p>
+            The two sum to one by definition: an additional unit of income can only do two things, be spent or be saved, and there is no third option. If a household spends a fraction <Katex formula="b" /> of each additional unit of income <Katex formula="Y" />, the remaining fraction <Katex formula="1-b" /> is by definition saved. The two exhaust all possibilities. This binary is more robust than it might initially appear. Paying down a debt is saving: the household is reducing a liability rather than acquiring goods or services, and the net effect on its financial position is the same as accumulating an asset. Buying stocks, bonds, or property is saving: these are allocations of income to future rather than current use. Making a gift or charitable donation counts as consumption from the giver's perspective: the income was voluntarily directed toward a use, which is what consumption means in this accounting. Holding cash under a mattress is saving. The categories are defined to be exhaustive: consumption is income spent on goods and services for current use, and saving is everything else.
+        </p>
+    </details>
+
+    <p>
+        Substituting the linear consumption function back into the expenditure identity replaces <Katex formula="C" /> with its components:
+    </p>
+    <Katex
+        formula="Y=\\underbrace{a+b\\cdot Y}_C+\\underbrace{I_{\\text{planned}}+I_{\\text{unplanned}}}_I+G+X-M"
+        display={true}
+    />
+    <hr />
+
+    <p>
+        A parallel assumption applies to imports <Katex formula="M" />. One justification is that if the consumption proportionality assumption holds and households spend more as income <Katex formula="Y" /> rises, some fraction of that additional spending would likely fall on foreign goods rather than domestic ones. The model encodes this as a proportionality between imports <Katex formula="M" /> and income <Katex formula="Y" />:
+    </p>
+    <Katex
+        formula="M\\sim Y"
+        display={true}
+    />
+    <details>
+        <summary>What are some criticisms of the import proportionality assumption?</summary>
+        <p>
+            <strong>Imports depend on relative prices as well as income.</strong> The assumption treats imports <Katex formula="M" /> as driven solely by income <Katex formula="Y" />, but the price of foreign goods relative to domestic ones probably matters at least as much. When the domestic currency weakens, imports become more expensive and households may substitute toward domestic goods regardless of what is happening to income. The defense is that exchange rates are determined outside this model and can be held fixed as a simplifying assumption. However, this means the model cannot speak to episodes where import volumes shift primarily because of currency movements rather than income changes.
+        </p>
+        <p>
+            <strong>The import intensity of spending varies across its components.</strong> Not all income <Katex formula="Y" /> generates the same volume of imports. Investment spending tends to be more import-intensive than consumption; government procurement may be directed toward domestic suppliers by policy. By treating all income as equally import-generating, the model cannot represent situations where the composition of spending shifts without a change in the aggregate level. The defense is that for small fluctuations around a stable composition, an average import propensity is a serviceable approximation. However, it will mispredict import volumes whenever spending composition changes substantially.
+        </p>
+        <p>
+            <strong>Some import categories are relatively insensitive to income.</strong> Imports of energy, raw materials, and commodities for which domestic substitutes are limited or nonexistent may not respond strongly to income fluctuations. A household does not import significantly more crude oil because its income rose. These necessities enter import volumes through channels largely disconnected from the income relationship the model assumes. The defense is that in aggregate, discretionary import spending is large enough that the income relationship holds approximately across the whole. However, the approximation degrades in economies heavily dependent on imported necessities.
+        </p>
+    </details>
+
+    <p>
+		Within this proportionality, the model assumes a linear relationship:
+	</p>
+    <Katex
+        formula="M=\\mu+mY"
+        display={true}
+    />
+    <p>
+		Where <Katex formula="\\mu" />, called autonomous imports, is the level of imports that occurs regardless of income <Katex formula="Y" />, covering goods for which domestic substitutes are limited or unavailable, and <Katex formula="m" />, the marginal propensity to import, is the fraction of each additional unit of income <Katex formula="Y" /> spent on foreign goods. The remainder <Katex formula="1-m" /> is the fraction that stays within the domestic economy.
+	</p>
+    <details>
+		<summary>What are some criticisms of the linear import function?</summary>
+		<p>
+			<strong>The autonomous import component is not truly autonomous.</strong> The term <Katex formula="\\mu" /> represents imports that occur regardless of income <Katex formula="Y" />, but it is probably not fixed. Exchange rate movements, changes in trade policy, and shifts in the relative prices of foreign versus domestic goods all affect the volume of imports that arrive independently of income fluctuations. Treating <Katex formula="\\mu" /> as a stable parameter absorbs all of this variation into a constant and then ignores how it moves. The defense is that over short horizons these background conditions are approximately stable. However, this concedes that <Katex formula="\\mu" /> is an empirical snapshot rather than a structural constant.
+		</p>
+		<p>
+			<strong>The marginal propensity to import probably varies across income levels.</strong> The coefficient <Katex formula="m" /> is treated as fixed, but lower-income and higher-income households may spend different fractions of additional income on foreign goods. A single <Katex formula="m" /> conceals this variation and will mispredict import responses when the income distribution shifts. The defense is that for aggregate analysis with a stable distribution, an average <Katex formula="m" /> is a serviceable approximation.
+		</p>
+		<p>
+			<strong>The marginal propensity to import is not stable over time.</strong> Trade agreements, changes in domestic production capacity, and long-run shifts in consumer preferences all affect the fraction of income that flows to imports. A fixed <Katex formula="m" /> treats the economy's trade structure as constant, which is a reasonable approximation over short horizons but increasingly misleading over longer ones. The defense is that the Keynesian Cross is a short-run model and <Katex formula="m" /> can be re-estimated as conditions change. However, this concedes that the parameter is empirical rather than structural.
+		</p>
+	</details>
+    <hr />
+
+    <Katex
+        formula="\\bar{a},~~\\bar{b},~~\\bar{G},~~\\bar{X},~~\\bar{I}_{\\text{planned}}\\text{ --- exogenous}"
+        display={true}
+    />
+</section>
 
 </article>
 

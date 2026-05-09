@@ -1,6 +1,5 @@
 import {
     useEffect,
-    useRef,
     useState,
     type ReactNode,
 } from "react";
@@ -14,29 +13,28 @@ import {
     bisector,
 } from "d3";
 
-interface Observation {
-    date: string;
-    value: number;
-}
+import Katex from "../Katex";
 
-interface ParsedObservation {
-    date: Date;
-    value: number;
-}
+import { MARGIN, CSS_HEIGHT, type Observation, type ParsedObservation, formatAxisValue, formatHoverValue, measureTextWidth } from "./chartShared";
+import { useContainerWidth } from "./useContainerWidth";
+import ChartFooter from "./ChartFooter";
 
-// d3 margin convention
-const MARGIN = { top: 20, right: 20, bottom: 36, left: 56 };
-const CSS_HEIGHT = 360;
+// hover tooltip geometry constants
+const TOOLTIP_PAD_X = 8;
+const TOOLTIP_PAD_Y = 6;
 
-interface ChartProps {
+interface LineChartProps {
     series: string;
-    title?: string;
+    title?: ReactNode;
+    // titleFormula: KaTeX formula rendered inline after the title.
+    // e.g. title="Real Gross Domestic Product" titleFormula="Y" renders:
+    // Real Gross Domestic Product Y
+    titleFormula?: string;
     cite?: ReactNode;
 }
 
-export default function Chart({ series, title, cite }: ChartProps) {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [width, setWidth] = useState(0);
+export default function LineChart({ series, title, titleFormula, cite }: LineChartProps) {
+    const [containerRef, width] = useContainerWidth();
     const [data, setData] = useState<ParsedObservation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -97,17 +95,6 @@ export default function Chart({ series, title, cite }: ChartProps) {
             });
     }, [series]);
 
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container) return;
-        const observer = new ResizeObserver(entries => {
-            setWidth(entries[0].contentRect.width);
-        });
-        observer.observe(container);
-        setWidth(container.clientWidth);
-        return () => observer.disconnect();
-    }, []);
-
     const innerWidth = width - MARGIN.left - MARGIN.right;
     const innerHeight = CSS_HEIGHT - MARGIN.top - MARGIN.bottom;
 
@@ -131,6 +118,7 @@ export default function Chart({ series, title, cite }: ChartProps) {
         const niceSteps = [1, 2, 5, 10, 20, 25, 50];
         return niceSteps.find(s => s >= rawStep) ?? 50;
     })();
+
     const xTicks = (() => {
         if (data.length === 0) return [];
         const lastYear = data[data.length - 1].date.getFullYear();
@@ -146,12 +134,6 @@ export default function Chart({ series, title, cite }: ChartProps) {
 
     const yMax = yScale.domain()[1] as number;
 
-    function formatAxisValue(v: number): string {
-        if (v === 0) return "0";
-        if (yMax >= 1000) return (v / 1000).toFixed(0) + "k";
-        return Number.isInteger(v) ? String(v) : v.toFixed(1);
-    }
-
     const lineGenerator = line<ParsedObservation>()
         .x(d => xScale(d.date))
         .y(d => yScale(d.value));
@@ -162,21 +144,16 @@ export default function Chart({ series, title, cite }: ChartProps) {
 
     function handleMouseMove(e: React.MouseEvent<SVGRectElement>) {
         const bounds = e.currentTarget.getBoundingClientRect();
-        const mouseX = e.clientX - bounds.left;
+        // subtract MARGIN.left because the capture rect starts MARGIN.left
+        // pixels to the left of the xScale origin
+        const mouseX = e.clientX - bounds.left - MARGIN.left;
         const date = xScale.invert(mouseX);
-        const index = bisectDate(data, date);
-        if (index >= 0 && index < data.length) {
-            setHoveredIndex(index);
-        }
-    }
-
-    function formatHoverValue(v: number): string {
-        if (v === 0) return "0";
-        if (Math.abs(v) >= 1000) return (v / 1000).toFixed(1) + "k";
-        return v.toFixed(1);
+        setHoveredIndex(bisectDate(data, date));
     }
 
     const hoveredPoint = hoveredIndex !== null ? data[hoveredIndex] : null;
+
+    const resolvedTitle = title ?? seriesTitle ?? series;
 
     return (
         <div style={{ width: "100%", marginBottom: "20px" }}>
@@ -188,7 +165,10 @@ export default function Chart({ series, title, cite }: ChartProps) {
                 textAlign: "center",
                 textWrap: "balance",
             }}>
-                {title ?? seriesTitle ?? series}
+                {resolvedTitle}
+                {titleFormula && (
+                    <> <Katex formula={titleFormula} display={false} /></>
+                )}
             </p>
             <div ref={containerRef} style={{ width: "100%" }}>
 
@@ -226,7 +206,7 @@ export default function Chart({ series, title, cite }: ChartProps) {
                     >
                         <g transform={`translate(${MARGIN.left}, ${MARGIN.top})`}>
 
-                            {/* y-axis gridlines and labels */}
+                            {/* y-axis gridlines and labels — last tick omitted, drawn separately as top edge */}
                             {yTicks.slice(0, -1).map(tick => (
                                 <g key={tick}>
                                     <line
@@ -246,7 +226,7 @@ export default function Chart({ series, title, cite }: ChartProps) {
                                         fontFamily="ui-serif, Georgia, serif"
                                         fontSize={13}
                                     >
-                                        {formatAxisValue(tick)}
+                                        {formatAxisValue(tick, yMax)}
                                     </text>
                                 </g>
                             ))}
@@ -254,32 +234,27 @@ export default function Chart({ series, title, cite }: ChartProps) {
                             {/* top gridline with label */}
                             <g>
                                 <line
-                                    x1={0}
-                                    y1={0}
-                                    x2={innerWidth}
-                                    y2={0}
+                                    x1={0} y1={0}
+                                    x2={innerWidth} y2={0}
                                     stroke="#e0e0dc"
                                     strokeWidth={0.5}
                                 />
                                 <text
-                                    x={-10}
-                                    y={0}
+                                    x={-10} y={0}
                                     textAnchor="end"
                                     dominantBaseline="middle"
                                     fill="#888884"
                                     fontFamily="ui-serif, Georgia, serif"
                                     fontSize={13}
                                 >
-                                    {formatAxisValue(yMax)}
+                                    {formatAxisValue(yMax, yMax)}
                                 </text>
                             </g>
 
                             {/* x-axis baseline */}
                             <line
-                                x1={0}
-                                y1={innerHeight}
-                                x2={innerWidth}
-                                y2={innerHeight}
+                                x1={0} y1={innerHeight}
+                                x2={innerWidth} y2={innerHeight}
                                 stroke="#e0e0dc"
                                 strokeWidth={1}
                             />
@@ -288,10 +263,8 @@ export default function Chart({ series, title, cite }: ChartProps) {
                             {xTicks.map(tick => (
                                 <g key={tick.getTime()}>
                                     <line
-                                        x1={xScale(tick)}
-                                        y1={innerHeight}
-                                        x2={xScale(tick)}
-                                        y2={innerHeight + 4}
+                                        x1={xScale(tick)} y1={innerHeight}
+                                        x2={xScale(tick)} y2={innerHeight + 4}
                                         stroke="#c8c8c4"
                                         strokeWidth={1}
                                     />
@@ -320,114 +293,97 @@ export default function Chart({ series, title, cite }: ChartProps) {
                                 />
                             )}
 
-                        {/* hover visuals */}
-                        {hoveredPoint && (() => {
-                            const hx = xScale(hoveredPoint.date);
-                            const hy = yScale(hoveredPoint.value);
-                            const flipLeft = hx > innerWidth / 2;
-                            const labelX = flipLeft ? hx - 10 : hx + 10;
-                            const anchor = flipLeft ? "end" : "start";
-                            return (
-                                <g pointerEvents="none">
-                                    <line
-                                        x1={hx} y1={0}
-                                        x2={hx} y2={innerHeight}
-                                        stroke="#c8c8c4"
-                                        strokeWidth={1}
-                                    />
-                                    <circle
-                                        cx={hx} cy={hy}
-                                        r={3.5}
-                                        fill="#1a1a1a"
-                                    />
-                                    <text
-                                        x={labelX} y={10}
-                                        textAnchor={anchor}
-                                        dominantBaseline="hanging"
-                                        fill="#1a1a1a"
-                                        fontSize={12}
-                                        fontFamily="ui-serif, Georgia, serif"
-                                        stroke="#f8f8f6"
-                                        strokeWidth={1}
-                                        paintOrder="stroke"
-                                    >
-                                        {hoveredPoint.date.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-                                    </text>
-                                    <text
-                                        x={labelX} y={28}
-                                        textAnchor={anchor}
-                                        dominantBaseline="hanging"
-                                        fill="#888884"
-                                        fontSize={12}
-                                        fontFamily="ui-serif, Georgia, serif"
-                                        stroke="#f8f8f6"
-                                        strokeWidth={3}
-                                        paintOrder="stroke"
-                                    >
-                                        {formatHoverValue(hoveredPoint.value)}
-                                    </text>
-                                </g>
-                            );
-                        })()}
+                            {/* hover visuals */}
+                            {hoveredPoint && (() => {
+                                const hx = xScale(hoveredPoint.date);
+                                const hy = yScale(hoveredPoint.value);
+                                const flipLeft = hx > innerWidth / 2;
+                                const labelX = flipLeft ? hx - 10 : hx + 10;
+                                const anchor = flipLeft ? "end" : "start";
 
-                        {/* hover capture area — transparent, on top for events */}
-                        <rect
-                            x={0} y={0}
-                            width={innerWidth}
-                            height={innerHeight}
-                            fill="none"
-                            pointerEvents="all"
-                            onMouseMove={handleMouseMove}
-                            onMouseLeave={() => setHoveredIndex(null)}
-                            style={{ cursor: "crosshair" }}
-                        />
+                                // measure actual text widths so the rect fits its content
+                                const dateStr = hoveredPoint.date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+                                const valueStr = formatHoverValue(hoveredPoint.value);
+                                const contentW = Math.max(
+                                    measureTextWidth(dateStr, 12),
+                                    measureTextWidth(valueStr, 12),
+                                );
+                                const rectH = 30 + TOOLTIP_PAD_Y * 2;
+                                const rectW = contentW + TOOLTIP_PAD_X * 2;
+                                const rectY = 10 - TOOLTIP_PAD_Y;
+                                const rectX = flipLeft
+                                    ? labelX - contentW - TOOLTIP_PAD_X
+                                    : labelX - TOOLTIP_PAD_X;
+
+                                const textProps = {
+                                    fontFamily: "ui-serif, Georgia, serif" as const,
+                                    fontSize: 12,
+                                    fill: "#1a1a1a",
+                                };
+
+                                return (
+                                    <g pointerEvents="none">
+                                        <line
+                                            x1={hx} y1={0}
+                                            x2={hx} y2={innerHeight}
+                                            stroke="#c8c8c4"
+                                            strokeWidth={1}
+                                        />
+                                        <circle cx={hx} cy={hy} r={3.5} fill="#1a1a1a" />
+                                        <rect
+                                            x={rectX} y={rectY}
+                                            width={rectW} height={rectH}
+                                            fill="#f8f8f6"
+                                            fillOpacity={0.72}
+                                            stroke="#e0e0dc"
+                                            strokeWidth={0.5}
+                                            rx={3}
+                                        />
+                                        <text
+                                            x={labelX} y={10}
+                                            textAnchor={anchor}
+                                            dominantBaseline="hanging"
+                                            {...textProps}
+                                        >
+                                            {dateStr}
+                                        </text>
+                                        <text
+                                            x={labelX} y={28}
+                                            textAnchor={anchor}
+                                            dominantBaseline="hanging"
+                                            {...textProps}
+                                        >
+                                            {formatHoverValue(hoveredPoint.value)}
+                                        </text>
+                                    </g>
+                                );
+                            })()}
+
+                            {/* hover capture area — transparent, on top for events */}
+                            <rect
+                                x={-MARGIN.left} y={0}
+                                width={innerWidth + MARGIN.left + MARGIN.right}
+                                height={innerHeight}
+                                fill="none"
+                                pointerEvents="all"
+                                onMouseMove={handleMouseMove}
+                                onMouseLeave={() => setHoveredIndex(null)}
+                                style={{ cursor: "crosshair" }}
+                            />
 
                         </g>
                     </svg>
                 )}
             </div>
 
-            <p style={{
-                display: "block",
-                fontSize: "0.85rem",
-                color: "#888884",
-                fontStyle: "normal",
-                fontFamily: "ui-serif, Georgia, serif",
-                marginTop: "8px",
-                marginBottom: "0",
-            }}>
-                {cite ?? (
-                    <>
-                        {(units || seasonalAdj) && (
-                            <span style={{ display: "block" }}>
-                                Units: {[units, seasonalAdj].filter(Boolean).join(", ")}
-                            </span>
-                        )}
-                        {frequency && (
-                            <span style={{ display: "block" }}>
-                                Frequency: {frequency}
-                            </span>
-                        )}
-                        <span style={{ display: "block" }}>
-                            Source: Federal Reserve Bank of St. Louis,{" "}
-                            <a
-                                href={`https://fred.stlouisfed.org/series/${series}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ color: "#888884" }}
-                            >
-                                {series}
-                            </a>
-                        </span>
-                        {lastUpdated && (
-                            <span style={{ display: "block" }}>
-                                Retrieved: {lastUpdated}
-                            </span>
-                        )}
-                    </>
-                )}
-            </p>
-
+            <ChartFooter
+                cite={cite}
+                units={units}
+                seasonalAdj={seasonalAdj}
+                frequency={frequency}
+                lastUpdated={lastUpdated}
+                series={series}
+            />
         </div>
     );
 }
