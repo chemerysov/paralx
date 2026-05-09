@@ -8,7 +8,6 @@ import {
     scaleTime,
     scaleLinear,
     extent,
-    max,
     line,
     bisector,
 } from "d3";
@@ -102,8 +101,9 @@ export default function LineChart({ series, title, titleFormula, cite }: LineCha
         .domain(extent(data, d => d.date) as [Date, Date])
         .range([0, innerWidth]);
 
+    const yExtent = data.length > 0 ? (extent(data, d => d.value) as [number, number]) : [0, 1];
     const yScale = scaleLinear()
-        .domain([0, max(data, d => d.value) as number])
+        .domain(yExtent)
         .nice(6)
         .range([innerHeight, 0]);
 
@@ -161,6 +161,7 @@ export default function LineChart({ series, title, titleFormula, cite }: LineCha
                 margin: "0 0 8px 0",
                 fontFamily: "ui-serif, Georgia, serif",
                 fontSize: "1rem",
+                fontWeight: 700,
                 color: "#1a1a1a",
                 textAlign: "center",
                 textWrap: "balance",
@@ -230,6 +231,16 @@ export default function LineChart({ series, title, titleFormula, cite }: LineCha
                                     </text>
                                 </g>
                             ))}
+
+                            {/* zero reference line when domain crosses zero */}
+                            {yScale.domain()[0] < 0 && yScale.domain()[1] > 0 && (
+                                <line
+                                    x1={0} y1={yScale(0)}
+                                    x2={innerWidth} y2={yScale(0)}
+                                    stroke="#c8c8c4"
+                                    strokeWidth={1}
+                                />
+                            )}
 
                             {/* top gridline with label */}
                             <g>
