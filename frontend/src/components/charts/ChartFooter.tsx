@@ -40,7 +40,7 @@ export default function ChartFooter({
 }: ChartFooterProps) {
     const footerStyle: React.CSSProperties = {
         display: "block",
-        fontSize: "0.85rem",
+        fontSize: "0.8rem",
         color: "#888884",
         fontStyle: "normal",
         fontFamily: "ui-serif, Georgia, serif",

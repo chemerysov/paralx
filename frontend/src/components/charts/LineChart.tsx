@@ -180,7 +180,7 @@ export default function LineChart({ series, title, titleFormula, cite }: LineCha
                         alignItems: "center",
                         justifyContent: "center",
                         color: "#888884",
-                        fontSize: "0.9rem",
+                        fontSize: "1rem",
                     }}>
                         Loading
                     </div>
@@ -193,7 +193,7 @@ export default function LineChart({ series, title, titleFormula, cite }: LineCha
                         alignItems: "center",
                         justifyContent: "center",
                         color: "#888884",
-                        fontSize: "0.9rem",
+                        fontSize: "1rem",
                     }}>
                         {error}
                     </div>
