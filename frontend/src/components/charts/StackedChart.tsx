@@ -15,28 +15,21 @@ import {
 
 import Katex from "../Katex";
 
-import { MARGIN, CSS_HEIGHT, type Observation, formatAxisValue, formatHoverValue, measureTextWidth } from "./chartShared";
+import {
+    MARGIN, CSS_HEIGHT, type Observation, formatHoverValue, measureTextWidth, computeXTicks,
+    TOOLTIP_PAD_X, TOOLTIP_PAD_Y, TOOLTIP_LINE_H, TOOLTIP_DATE_Y, TOOLTIP_FIRST_ROW_Y,
+    tooltipGeometry,
+    CHART_PALETTE, CHART_TOTAL_COLOR, SWATCH_W, SWATCH_GAP,
+} from "./chartShared";
 import { useContainerWidth } from "./useContainerWidth";
 import ChartFooter, { type SeriesLegendEntry } from "./ChartFooter";
+import ChartTitle from "./ChartTitle";
+import ChartLegend, { type LegendEntry } from "./ChartLegend";
+import ChartPlaceholder from "./ChartPlaceholder";
+import ChartAxes from "./ChartAxes";
+import ChartTooltip from "./ChartTooltip";
 
-// palette for stacked areas — muted, earthy tones that suit the warm off-white background
-const SERIES_PALETTE = [
-    "#c8a86c",  // honey
-    "#7cba68",  // meadow
-    "#68a8c8",  // cornflower
-    "#a87cc8",  // lilac
-    "#c87c74",  // dusty rose
-    "#6cbaaa",  // seafoam
-    "#c8b85c",  // straw
-];
-const TOTAL_COLOR = "#3a3a3a";
 
-// hover tooltip geometry
-const TOOLTIP_PAD_X = 8;
-const TOOLTIP_PAD_Y = 6;
-const TOOLTIP_LINE_H = 16;
-const TOOLTIP_DATE_Y = 10;
-const TOOLTIP_FIRST_SERIES_Y = 28;
 
 export interface StackedSeriesConfig {
     id: string;
@@ -136,11 +129,11 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
     const unstableSeries = stackSeries.filter(s => s.unstable);
     const totalSeries  = series.find(s => s.isTotal) ?? null;
 
-    // assign palette colors: non-total series get SERIES_PALETTE in order, total gets TOTAL_COLOR
+    // assign palette colors: non-total series get CHART_PALETTE in order, total gets CHART_TOTAL_COLOR
     const colorMap: Record<string, string> = {};
     let paletteIdx = 0;
     for (const s of series) {
-        colorMap[s.id] = s.isTotal ? TOTAL_COLOR : SERIES_PALETTE[paletteIdx++ % SERIES_PALETTE.length];
+        colorMap[s.id] = s.isTotal ? CHART_TOTAL_COLOR : CHART_PALETTE[paletteIdx++ % CHART_PALETTE.length];
     }
 
     useEffect(() => {
@@ -236,28 +229,7 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
     const yTicks = yScale.ticks(6);
     const [, yDomainMax] = yScale.domain() as [number, number];
 
-    const xTickInterval = (() => {
-        if (aligned.length < 2) return 10;
-        const spanYears =
-            aligned[aligned.length - 1].date.getFullYear() - aligned[0].date.getFullYear();
-        const maxTicks = Math.max(1, Math.floor(innerWidth / 60));
-        const rawStep = spanYears / maxTicks;
-        const niceSteps = [1, 2, 5, 10, 20, 25, 50];
-        return niceSteps.find(s => s >= rawStep) ?? 50;
-    })();
-
-    const xTicks = (() => {
-        if (aligned.length === 0) return [];
-        const lastYear = aligned[aligned.length - 1].date.getFullYear();
-        const firstYear = aligned[0].date.getFullYear();
-        const [domainStart, domainEnd] = xScale.domain() as [Date, Date];
-        const ticks: Date[] = [];
-        for (let y = lastYear; y >= firstYear; y -= xTickInterval) {
-            const t = new Date(y, 0, 1);
-            if (t >= domainStart && t <= domainEnd) ticks.unshift(t);
-        }
-        return ticks;
-    })();
+    const xTicks = computeXTicks(aligned, innerWidth, xScale.domain() as [Date, Date]);
 
     const makeAreaPath = (bandData: BandPoint[]) =>
         area<BandPoint>()
@@ -287,11 +259,8 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
 
     function handleMouseMove(e: React.MouseEvent<SVGRectElement>) {
         const bounds = e.currentTarget.getBoundingClientRect();
-        // subtract MARGIN.left because the capture rect starts MARGIN.left
-        // pixels to the left of the xScale origin
         const mouseX = e.clientX - bounds.left - MARGIN.left;
-        const date = xScale.invert(mouseX);
-        setHoveredIndex(bisectDate(aligned, date));
+        setHoveredIndex(bisectDate(aligned, xScale.invert(mouseX)));
     }
 
     const hoveredPoint = hoveredIndex !== null ? aligned[hoveredIndex] : null;
@@ -314,187 +283,41 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
         })()
         : undefined;
 
+    const legendEntries: LegendEntry[] = [
+        ...series.map(s => ({
+            id: s.id,
+            label: <Katex formula={s.label} display={false} />,
+            swatch: (s.isTotal ? "dashed" : s.unstable ? "solid" : "area") as LegendEntry["swatch"],
+            color: colorMap[s.id],
+        })),
+        ...(epsRawData ? [{
+            id: "ε",
+            label: <Katex formula="\varepsilon" display={false} />,
+            swatch: "dotted" as LegendEntry["swatch"],
+            color: CHART_TOTAL_COLOR,
+        }] : []),
+    ];
+
     return (
         <div style={{ width: "100%", marginBottom: "20px" }}>
-            <p style={{
-                margin: "0 0 8px 0",
-                fontFamily: "ui-serif, Georgia, serif",
-                fontSize: "1rem",
-                fontWeight: 700,
-                color: "#1a1a1a",
-                textAlign: "center",
-                textWrap: "balance",
-            }}>
-                {title}
-                {titleFormula && (
-                    <> <Katex formula={titleFormula} display={false} /></>
-                )}
-            </p>
-
-            {/* legend */}
-            <div style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "12px",
-                justifyContent: "center",
-                marginBottom: "8px",
-                fontFamily: "ui-serif, Georgia, serif",
-                fontSize: "1rem",
-                color: "#888884",
-            }}>
-                {series.map(s => (
-                    <span key={s.id} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                        {s.isTotal ? (
-                            <span style={{
-                                display: "inline-block",
-                                width: "16px",
-                                height: "0",
-                                borderTop: `3px dashed ${colorMap[s.id]}`,
-                                flexShrink: 0,
-                            }} />
-                        ) : s.unstable ? (
-                            <span style={{
-                                display: "inline-block",
-                                width: "16px",
-                                height: "0",
-                                borderTop: `3px solid ${colorMap[s.id]}`,
-                                flexShrink: 0,
-                            }} />
-                        ) : (
-                            <span style={{
-                                display: "inline-block",
-                                width: "12px",
-                                height: "12px",
-                                backgroundColor: colorMap[s.id],
-                                borderRadius: "2px",
-                                flexShrink: 0,
-                                opacity: 0.85,
-                            }} />
-                        )}
-                        <Katex formula={s.label} display={false} />
-                    </span>
-                ))}
-                {epsRawData && (
-                    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                        <span style={{
-                            display: "inline-block",
-                            width: "16px",
-                            height: "0",
-                            borderTop: `3px dotted ${TOTAL_COLOR}`,
-                            flexShrink: 0,
-                        }} />
-                        ε
-                    </span>
-                )}
-            </div>
+            <ChartTitle formula={titleFormula}>{title}</ChartTitle>
+            <ChartLegend entries={legendEntries} />
 
             <div ref={containerRef} style={{ width: "100%" }}>
-
-                {loading && (
-                    <div style={{
-                        height: CSS_HEIGHT,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#888884",
-                        fontSize: "1rem",
-                    }}>
-                        Loading
-                    </div>
-                )}
-
-                {error && (
-                    <div style={{
-                        height: CSS_HEIGHT,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#888884",
-                        fontSize: "1rem",
-                    }}>
-                        {error}
-                    </div>
-                )}
+                <ChartPlaceholder loading={loading} error={error} />
 
                 {!loading && !error && width > 0 && aligned.length > 0 && (
-                    <svg
-                        width={width}
-                        height={CSS_HEIGHT}
-                        style={{ display: "block" }}
-                    >
+                    <svg width={width} height={CSS_HEIGHT} style={{ display: "block" }}>
                         <g transform={`translate(${MARGIN.left}, ${MARGIN.top})`}>
 
-                            {yTicks.slice(0, -1).map(tick => (
-                                <g key={tick}>
-                                    <line
-                                        x1={0}
-                                        y1={yScale(tick)}
-                                        x2={innerWidth}
-                                        y2={yScale(tick)}
-                                        stroke={tick === 0 ? "#c8c8c4" : "#e0e0dc"}
-                                        strokeWidth={tick === 0 ? 1 : 0.5}
-                                    />
-                                    <text
-                                        x={-10}
-                                        y={yScale(tick)}
-                                        textAnchor="end"
-                                        dominantBaseline="middle"
-                                        fill="#888884"
-                                        fontFamily="ui-serif, Georgia, serif"
-                                        fontSize={13}
-                                    >
-                                        {formatAxisValue(tick, yDomainMax)}
-                                    </text>
-                                </g>
-                            ))}
-
-                            <g>
-                                <line
-                                    x1={0} y1={0}
-                                    x2={innerWidth} y2={0}
-                                    stroke="#e0e0dc"
-                                    strokeWidth={0.5}
-                                />
-                                <text
-                                    x={-10} y={0}
-                                    textAnchor="end"
-                                    dominantBaseline="middle"
-                                    fill="#888884"
-                                    fontFamily="ui-serif, Georgia, serif"
-                                    fontSize={13}
-                                >
-                                    {formatAxisValue(yDomainMax, yDomainMax)}
-                                </text>
-                            </g>
-
-                            <line
-                                x1={0} y1={innerHeight}
-                                x2={innerWidth} y2={innerHeight}
-                                stroke="#e0e0dc"
-                                strokeWidth={1}
+                            <ChartAxes
+                                xScale={xScale}
+                                yScale={yScale}
+                                innerWidth={innerWidth}
+                                innerHeight={innerHeight}
+                                xTicks={xTicks}
+                                yTicks={yTicks}
                             />
-
-                            {xTicks.map(tick => (
-                                <g key={tick.getTime()}>
-                                    <line
-                                        x1={xScale(tick)} y1={innerHeight}
-                                        x2={xScale(tick)} y2={innerHeight + 4}
-                                        stroke="#c8c8c4"
-                                        strokeWidth={1}
-                                    />
-                                    <text
-                                        x={xScale(tick)}
-                                        y={innerHeight + 8}
-                                        textAnchor="middle"
-                                        dominantBaseline="hanging"
-                                        fill="#888884"
-                                        fontFamily="ui-serif, Georgia, serif"
-                                        fontSize={13}
-                                    >
-                                        {tick.getFullYear()}
-                                    </text>
-                                </g>
-                            ))}
 
                             {stackSeries.map(cfg => {
                                 const bandData = bands[cfg.id];
@@ -529,7 +352,7 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                                 <path
                                     d={totalPathD}
                                     fill="none"
-                                    stroke={totalSeries ? colorMap[totalSeries.id] : TOTAL_COLOR}
+                                    stroke={totalSeries ? colorMap[totalSeries.id] : CHART_TOTAL_COLOR}
                                     strokeWidth={1.5}
                                     strokeLinejoin="round"
                                     strokeDasharray="4 2"
@@ -540,7 +363,7 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                                 <path
                                     d={epsPathD}
                                     fill="none"
-                                    stroke={TOTAL_COLOR}
+                                    stroke={CHART_TOTAL_COLOR}
                                     strokeWidth={1}
                                     strokeLinejoin="round"
                                     strokeDasharray="2 3"
@@ -549,9 +372,6 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
 
                             {hoveredPoint && (() => {
                                 const hx = xScale(hoveredPoint.date);
-                                const flipLeft = hx > innerWidth / 2;
-
-                                // build structured rows: labelSign | labelName : valSign | valNum
                                 const dateStr = hoveredPoint.date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
                                 const computedSum = stackSeries.reduce((acc, cfg) => {
                                     const val = hoveredPoint.values[cfg.id] ?? 0;
@@ -561,47 +381,42 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                                     ? (hoveredPoint.values[totalSeries.id] ?? 0) - computedSum
                                     : null;
 
-                                type TRow = { key: string; labelSign: string; labelName: string; valSign: string; valNum: string };
+                                type SwatchType = "area" | "solid" | "dashed" | "dotted";
+                                type TRow = { key: string; labelSign: string; labelName: string; valSign: string; valNum: string; color: string; swatchType: SwatchType };
                                 const rows: TRow[] = [
                                     ...series.map((cfg, i) => {
                                         const name = cfg.labelHover ?? cfg.label;
-                                        if (cfg.isTotal) return { key: cfg.id, labelSign: "=", labelName: name, valSign: "=", valNum: formatHoverValue(computedSum) };
+                                        const color = colorMap[cfg.id];
+                                        const swatchType: SwatchType = cfg.isTotal ? "dashed" : cfg.unstable ? "solid" : "area";
+                                        if (cfg.isTotal) return { key: cfg.id, labelSign: "=", labelName: name, valSign: "=", valNum: formatHoverValue(computedSum), color, swatchType };
                                         const formulaSign = cfg.sign === 1 ? "+" : "-";
                                         const rawVal = hoveredPoint.values[cfg.id] ?? 0;
                                         const isFirst = i === 0;
                                         const effectivePositive = cfg.sign === 1 ? rawVal >= 0 : rawVal <= 0;
                                         const effectiveSign = effectivePositive ? "+" : "-";
-                                        return { key: cfg.id, labelSign: isFirst ? "" : formulaSign, labelName: name, valSign: isFirst ? (effectivePositive ? "" : "-") : effectiveSign, valNum: formatHoverValue(Math.abs(rawVal)) };
+                                        return { key: cfg.id, labelSign: isFirst ? "" : formulaSign, labelName: name, valSign: isFirst ? (effectivePositive ? "" : "-") : effectiveSign, valNum: formatHoverValue(Math.abs(rawVal)), color, swatchType };
                                     }),
-                                    ...(eps !== null ? [{ key: "ε", labelSign: "+", labelName: "ε", valSign: eps >= 0 ? "+" : "-", valNum: formatHoverValue(Math.abs(eps)) }] : []),
+                                    ...(eps !== null ? [{ key: "ε", labelSign: "+", labelName: "ε", valSign: eps >= 0 ? "+" : "-", valNum: formatHoverValue(Math.abs(eps)), color: CHART_TOTAL_COLOR, swatchType: "dotted" as SwatchType }] : []),
                                 ];
 
-                                // five-column measurements
                                 const GAP = 5;
                                 const signCharW = measureTextWidth("+", 12);
                                 const colonCharW = measureTextWidth(":", 12);
                                 const maxNameW = Math.max(...rows.map(r => measureTextWidth(r.labelName, 12)));
                                 const maxNumW = Math.max(...rows.map(r => measureTextWidth(r.valNum, 12)));
-                                // column x offsets relative to baseX
-                                const c1 = 0;                               // label sign
-                                const c2 = c1 + signCharW + GAP;            // label name
-                                const c3 = c2 + maxNameW + GAP;             // colon
-                                const c4 = c3 + colonCharW + GAP;           // value sign
-                                const c5 = c4 + signCharW + GAP;            // value number
+                                const c0 = 0;
+                                const c1 = c0 + SWATCH_W + SWATCH_GAP;
+                                const c2 = c1 + signCharW + GAP;
+                                const c3 = c2 + maxNameW + GAP;
+                                const c4 = c3 + colonCharW + GAP;
+                                const c5 = c4 + signCharW + GAP;
                                 const rowsW = c5 + maxNumW;
                                 const contentW = Math.max(measureTextWidth(dateStr, 12), rowsW);
 
-                                const lastRowY = TOOLTIP_FIRST_SERIES_Y + (rows.length - 1) * TOOLTIP_LINE_H;
+                                const lastRowY = TOOLTIP_FIRST_ROW_Y + (rows.length - 1) * TOOLTIP_LINE_H;
                                 const contentH = lastRowY - TOOLTIP_DATE_Y + 12;
-                                const rectH = contentH + TOOLTIP_PAD_Y * 2;
-                                const rectW = contentW + TOOLTIP_PAD_X * 2;
-                                const rectY = TOOLTIP_DATE_Y - TOOLTIP_PAD_Y;
-
-                                const textLeft = flipLeft
-                                    ? hx - 10 - contentW - TOOLTIP_PAD_X
-                                    : hx + 10 - TOOLTIP_PAD_X;
-                                const rectX = textLeft;
-                                const baseX = textLeft + TOOLTIP_PAD_X;
+                                const geo = tooltipGeometry(hx, innerWidth, contentW, contentH);
+                                const { baseX } = geo;
 
                                 const textProps = {
                                     fontFamily: "ui-serif, Georgia, serif" as const,
@@ -610,35 +425,28 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                                 };
 
                                 return (
-                                    <g pointerEvents="none">
-                                        <line
-                                            x1={hx} y1={0}
-                                            x2={hx} y2={innerHeight}
-                                            stroke="#c8c8c4"
-                                            strokeWidth={1}
-                                        />
-                                        <rect
-                                            x={rectX} y={rectY}
-                                            width={rectW} height={rectH}
-                                            fill="#f8f8f6"
-                                            fillOpacity={0.72}
-                                            stroke="#e0e0dc"
-                                            strokeWidth={0.5}
-                                            rx={3}
-                                        />
-                                        <text
-                                            x={baseX + contentW / 2}
-                                            y={TOOLTIP_DATE_Y}
-                                            textAnchor="middle"
-                                            dominantBaseline="hanging"
-                                            {...textProps}
-                                        >
-                                            {dateStr}
-                                        </text>
+                                    <ChartTooltip hx={hx} innerHeight={innerHeight} dateStr={dateStr} {...geo}>
                                         {rows.map((row, i) => {
-                                            const y = TOOLTIP_FIRST_SERIES_Y + i * TOOLTIP_LINE_H;
+                                            const y = TOOLTIP_FIRST_ROW_Y + i * TOOLTIP_LINE_H;
+                                            const swatchMidY = y + 4.5;
                                             return (
                                                 <g key={row.key}>
+                                                    {(row.swatchType === "area" || row.swatchType === "solid") ? (
+                                                        <rect
+                                                            x={baseX + c0} y={swatchMidY - 1.5}
+                                                            width={SWATCH_W} height={3}
+                                                            fill={row.color}
+                                                            fillOpacity={row.swatchType === "area" ? 0.82 : 1}
+                                                        />
+                                                    ) : (
+                                                        <line
+                                                            x1={baseX + c0} y1={swatchMidY}
+                                                            x2={baseX + c0 + SWATCH_W} y2={swatchMidY}
+                                                            stroke={row.color}
+                                                            strokeWidth={row.swatchType === "dotted" ? 1 : 1.5}
+                                                            strokeDasharray={row.swatchType === "dashed" ? "4 2" : "2 3"}
+                                                        />
+                                                    )}
                                                     {row.labelSign && (
                                                         <text x={baseX + c1} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
                                                             {row.labelSign}
@@ -661,7 +469,7 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                                                 </g>
                                             );
                                         })}
-                                    </g>
+                                    </ChartTooltip>
                                 );
                             })()}
 

@@ -14,363 +14,299 @@ import {
 
 import Katex from "../Katex";
 
-import { MARGIN, CSS_HEIGHT, type Observation, type ParsedObservation, formatAxisValue, formatHoverValue, measureTextWidth } from "./chartShared";
+import {
+    MARGIN, CSS_HEIGHT,
+    type Observation, type ParsedObservation,
+    formatHoverValue, measureTextWidth, computeXTicks,
+    TOOLTIP_LINE_H, TOOLTIP_FIRST_ROW_Y,
+    tooltipGeometry,
+    CHART_PALETTE, SWATCH_W, SWATCH_GAP,
+} from "./chartShared";
 import { useContainerWidth } from "./useContainerWidth";
-import ChartFooter from "./ChartFooter";
+import ChartFooter, { type SeriesLink, type SeriesLegendEntry } from "./ChartFooter";
+import ChartTitle from "./ChartTitle";
+import ChartLegend, { type LegendEntry } from "./ChartLegend";
+import ChartPlaceholder from "./ChartPlaceholder";
+import ChartAxes from "./ChartAxes";
+import ChartTooltip from "./ChartTooltip";
 
-// hover tooltip geometry constants
-const TOOLTIP_PAD_X = 8;
-const TOOLTIP_PAD_Y = 6;
+
+export interface LineSeriesConfig {
+    id: string;
+    label?: string;      // KaTeX formula: legend, footer, and (single-series) title suffix
+    labelHover?: string; // plain text: hover tooltip (falls back to label then id)
+}
+
+interface SeriesMeta {
+    title?: string;
+    units?: string;
+    seasonalAdj?: string;
+    frequency?: string;
+    lastUpdated?: string;
+}
 
 interface LineChartProps {
-    series: string;
+    series: string | LineSeriesConfig | (string | LineSeriesConfig)[];
     title?: ReactNode;
-    // titleFormula: KaTeX formula rendered inline after the title.
-    // e.g. title="Real Gross Domestic Product" titleFormula="Y" renders:
-    // Real Gross Domestic Product Y
-    titleFormula?: string;
     cite?: ReactNode;
 }
 
-export default function LineChart({ series, title, titleFormula, cite }: LineChartProps) {
+export default function LineChart({ series, title, cite }: LineChartProps) {
+    const seriesConfigs: LineSeriesConfig[] = (Array.isArray(series) ? series : [series])
+        .map(s => typeof s === "string" ? { id: s } : s);
+    const seriesIds = seriesConfigs.map(c => c.id);
+    const isMulti = seriesIds.length > 1;
+    const seriesKey = seriesIds.join(",");
+
     const [containerRef, width] = useContainerWidth();
-    const [data, setData] = useState<ParsedObservation[]>([]);
+    const [allData, setAllData] = useState<Record<string, ParsedObservation[]>>({});
+    const [metaMap, setMetaMap] = useState<Record<string, SeriesMeta>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-    const [seriesTitle, setSeriesTitle] = useState<string | null>(null);
-    const [units, setUnits] = useState<string | null>(null);
-    const [seasonalAdj, setSeasonalAdj] = useState<string | null>(null);
-    const [frequency, setFrequency] = useState<string | null>(null);
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-    function fetchMeta() {
-        fetch(`/api/series/${series}/meta`)
+    function fetchMeta(id: string) {
+        fetch(`/api/series/${id}/meta`)
             .then(res => res.ok ? res.json() : null)
             .then(meta => {
-                if (meta?.last_fetched_at) {
-                    setLastUpdated(new Date(meta.last_fetched_at).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        timeZone: "UTC",
-                        timeZoneName: "short",
-                    }));
-                }
-                if (meta?.title) setSeriesTitle(meta.title);
-                if (meta?.units) setUnits(meta.units);
-                if (meta?.seasonal_adjustment) setSeasonalAdj(meta.seasonal_adjustment);
-                if (meta?.frequency) setFrequency(meta.frequency);
+                if (!meta) return;
+                setMetaMap(prev => ({
+                    ...prev,
+                    [id]: {
+                        title: meta.title,
+                        units: meta.units,
+                        seasonalAdj: meta.seasonal_adjustment,
+                        frequency: meta.frequency,
+                        lastUpdated: meta.last_fetched_at
+                            ? new Date(meta.last_fetched_at).toLocaleString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                timeZone: "UTC",
+                                timeZoneName: "short",
+                            })
+                            : undefined,
+                    },
+                }));
             })
             .catch(() => {});
     }
 
     useEffect(() => {
-        fetchMeta();
-    }, [series]);
+        let cancelled = false;
+        setAllData({});
+        setMetaMap({});
+        setLoading(true);
+        setError(null);
 
-    useEffect(() => {
-        fetch(`/api/series/${series}`)
-            .then(res => {
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json();
-            })
-            .then((raw: Observation[]) => {
-                setData(raw.map(d => ({
-                    // appending T00:00:00 forces local time parsing
-                    // rather than UTC midnight, avoiding date-off-by-one
-                    // on timezones west of UTC
-                    date: new Date(d.date + "T00:00:00"),
-                    value: d.value,
-                })));
-                setLoading(false);
-                fetchMeta();
-            })
-            .catch(() => {
-                setError("Failed to load data.");
-                setLoading(false);
-            });
-    }, [series]);
+        const ids = seriesKey.split(",");
+        let loaded = 0;
+
+        ids.forEach(id => {
+            fetchMeta(id);
+            fetch(`/api/series/${id}`)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then((raw: Observation[]) => {
+                    if (cancelled) return;
+                    const parsed = raw.map(d => ({
+                        // T00:00:00 forces local-time parsing, avoiding date-off-by-one west of UTC
+                        date: new Date(d.date + "T00:00:00"),
+                        value: d.value,
+                    }));
+                    setAllData(prev => ({ ...prev, [id]: parsed }));
+                    loaded++;
+                    if (loaded === ids.length) {
+                        setLoading(false);
+                        ids.forEach(fetchMeta);
+                    }
+                })
+                .catch(() => {
+                    if (!cancelled) {
+                        setError("Failed to load data.");
+                        setLoading(false);
+                    }
+                });
+        });
+
+        return () => { cancelled = true; };
+    }, [seriesKey]);
+
+    const primaryData = allData[seriesIds[0]] ?? [];
+    const allPoints = Object.values(allData).flat();
+
+    // x-domain starts at the latest "first non-zero observation" across all series
+    const effectiveStart = (() => {
+        if (Object.keys(allData).length < seriesIds.length) return null;
+        const firstDates = seriesIds.map(id => {
+            const first = (allData[id] ?? []).find(p => p.value !== 0);
+            return first ? first.date : null;
+        });
+        if (firstDates.some(d => d === null)) return null;
+        return new Date(Math.max(...(firstDates as Date[]).map(d => d.getTime())));
+    })();
+
+    const visiblePoints = effectiveStart ? allPoints.filter(p => p.date >= effectiveStart) : allPoints;
+    const visiblePrimaryData = effectiveStart ? primaryData.filter(p => p.date >= effectiveStart) : primaryData;
 
     const innerWidth = width - MARGIN.left - MARGIN.right;
     const innerHeight = CSS_HEIGHT - MARGIN.top - MARGIN.bottom;
 
-    const xScale = scaleTime()
-        .domain(extent(data, d => d.date) as [Date, Date])
-        .range([0, innerWidth]);
+    const xExtent = extent(visiblePoints, d => d.date) as [Date, Date];
+    const xDomain: [Date, Date] = xExtent[0] ? xExtent : [new Date(2000, 0, 1), new Date()];
+    const xScale = scaleTime().domain(xDomain).range([0, innerWidth]);
 
-    const yExtent = data.length > 0 ? (extent(data, d => d.value) as [number, number]) : [0, 1];
-    const yScale = scaleLinear()
-        .domain(yExtent)
-        .nice(6)
-        .range([innerHeight, 0]);
+    const yExtent = visiblePoints.length > 0 ? (extent(visiblePoints, d => d.value) as [number, number]) : [0, 1];
+    const yScale = scaleLinear().domain(yExtent).nice(6).range([innerHeight, 0]);
 
     const yTicks = yScale.ticks(6);
+    const xTicks = computeXTicks(visiblePrimaryData, innerWidth, xDomain);
 
-    const xTickInterval = (() => {
-        if (data.length < 2) return 10;
-        const spanYears =
-            data[data.length - 1].date.getFullYear() - data[0].date.getFullYear();
-        const maxTicks = Math.max(1, Math.floor(innerWidth / 60));
-        const rawStep = spanYears / maxTicks;
-        const niceSteps = [1, 2, 5, 10, 20, 25, 50];
-        return niceSteps.find(s => s >= rawStep) ?? 50;
-    })();
-
-    const xTicks = (() => {
-        if (data.length === 0) return [];
-        const lastYear = data[data.length - 1].date.getFullYear();
-        const firstYear = data[0].date.getFullYear();
-        const [domainStart, domainEnd] = xScale.domain() as [Date, Date];
-        const ticks: Date[] = [];
-        for (let y = lastYear; y >= firstYear; y -= xTickInterval) {
-            const t = new Date(y, 0, 1);
-            if (t >= domainStart && t <= domainEnd) ticks.unshift(t);
-        }
-        return ticks;
-    })();
-
-    const yMax = yScale.domain()[1] as number;
-
-    const lineGenerator = line<ParsedObservation>()
+    const lineGen = line<ParsedObservation>()
         .x(d => xScale(d.date))
         .y(d => yScale(d.value));
-
-    const pathD = lineGenerator(data);
 
     const bisectDate = bisector((d: ParsedObservation) => d.date).center;
 
     function handleMouseMove(e: React.MouseEvent<SVGRectElement>) {
         const bounds = e.currentTarget.getBoundingClientRect();
-        // subtract MARGIN.left because the capture rect starts MARGIN.left
-        // pixels to the left of the xScale origin
         const mouseX = e.clientX - bounds.left - MARGIN.left;
-        const date = xScale.invert(mouseX);
-        setHoveredIndex(bisectDate(data, date));
+        setHoveredIndex(bisectDate(visiblePrimaryData, xScale.invert(mouseX)));
     }
 
-    const hoveredPoint = hoveredIndex !== null ? data[hoveredIndex] : null;
+    // ── derived display values ─────────────────────────────────────────────────
 
-    const resolvedTitle = title ?? seriesTitle ?? series;
+    const primaryMeta = metaMap[seriesIds[0]];
+
+    const resolvedTitle = title ?? (
+        isMulti
+            ? (seriesIds.every(id => metaMap[id]?.title)
+                ? seriesIds.map(id => metaMap[id]!.title).join(" vs ")
+                : null)
+            : (primaryMeta?.title ?? seriesIds[0])
+    );
+
+    const legendEntries: LegendEntry[] = isMulti ? seriesConfigs.map((cfg, i) => ({
+        id: cfg.id,
+        label: cfg.label
+            ? <Katex formula={cfg.label} display={false} />
+            : (metaMap[cfg.id]?.title ?? cfg.id),
+        swatch: "solid" as const,
+        color: CHART_PALETTE[i % CHART_PALETTE.length],
+    })) : [];
+
+    // footer: use full legend grid once all labels + meta are ready
+    const allHaveLabels = isMulti && seriesConfigs.every(cfg => cfg.label);
+    const allMetaReady = seriesIds.every(id => metaMap[id]?.title);
+    const footerLegend: SeriesLegendEntry[] | undefined = allHaveLabels && allMetaReady
+        ? seriesConfigs.map(cfg => ({
+            id: cfg.id,
+            label: cfg.label!,
+            metaTitle: metaMap[cfg.id]!.title!,
+        }))
+        : undefined;
+    const footerLinks: SeriesLink[] | undefined = !footerLegend
+        ? seriesIds.map(id => ({ id }))
+        : undefined;
+
+    // ── render ─────────────────────────────────────────────────────────────────
 
     return (
         <div style={{ width: "100%", marginBottom: "20px" }}>
-            <p style={{
-                margin: "0 0 8px 0",
-                fontFamily: "ui-serif, Georgia, serif",
-                fontSize: "1rem",
-                fontWeight: 700,
-                color: "#1a1a1a",
-                textAlign: "center",
-                textWrap: "balance",
-            }}>
-                {resolvedTitle}
-                {titleFormula && (
-                    <> <Katex formula={titleFormula} display={false} /></>
-                )}
-            </p>
+            {resolvedTitle != null && (
+                <ChartTitle formula={!isMulti ? seriesConfigs[0].label : undefined}>{resolvedTitle}</ChartTitle>
+            )}
+            <ChartLegend entries={legendEntries} />
+
             <div ref={containerRef} style={{ width: "100%" }}>
-
-                {loading && (
-                    <div style={{
-                        height: CSS_HEIGHT,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#888884",
-                        fontSize: "1rem",
-                    }}>
-                        Loading
-                    </div>
-                )}
-
-                {error && (
-                    <div style={{
-                        height: CSS_HEIGHT,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#888884",
-                        fontSize: "1rem",
-                    }}>
-                        {error}
-                    </div>
-                )}
+                <ChartPlaceholder loading={loading} error={error} />
 
                 {!loading && !error && width > 0 && (
-                    <svg
-                        width={width}
-                        height={CSS_HEIGHT}
-                        style={{ display: "block" }}
-                    >
+                    <svg width={width} height={CSS_HEIGHT} style={{ display: "block" }}>
                         <g transform={`translate(${MARGIN.left}, ${MARGIN.top})`}>
 
-                            {/* y-axis gridlines and labels — last tick omitted, drawn separately as top edge */}
-                            {yTicks.slice(0, -1).map(tick => (
-                                <g key={tick}>
-                                    <line
-                                        x1={0}
-                                        y1={yScale(tick)}
-                                        x2={innerWidth}
-                                        y2={yScale(tick)}
-                                        stroke="#e0e0dc"
-                                        strokeWidth={0.5}
-                                    />
-                                    <text
-                                        x={-10}
-                                        y={yScale(tick)}
-                                        textAnchor="end"
-                                        dominantBaseline="middle"
-                                        fill="#888884"
-                                        fontFamily="ui-serif, Georgia, serif"
-                                        fontSize={13}
-                                    >
-                                        {formatAxisValue(tick, yMax)}
-                                    </text>
-                                </g>
-                            ))}
-
-                            {/* zero reference line when domain crosses zero */}
-                            {yScale.domain()[0] < 0 && yScale.domain()[1] > 0 && (
-                                <line
-                                    x1={0} y1={yScale(0)}
-                                    x2={innerWidth} y2={yScale(0)}
-                                    stroke="#c8c8c4"
-                                    strokeWidth={1}
-                                />
-                            )}
-
-                            {/* top gridline with label */}
-                            <g>
-                                <line
-                                    x1={0} y1={0}
-                                    x2={innerWidth} y2={0}
-                                    stroke="#e0e0dc"
-                                    strokeWidth={0.5}
-                                />
-                                <text
-                                    x={-10} y={0}
-                                    textAnchor="end"
-                                    dominantBaseline="middle"
-                                    fill="#888884"
-                                    fontFamily="ui-serif, Georgia, serif"
-                                    fontSize={13}
-                                >
-                                    {formatAxisValue(yMax, yMax)}
-                                </text>
-                            </g>
-
-                            {/* x-axis baseline */}
-                            <line
-                                x1={0} y1={innerHeight}
-                                x2={innerWidth} y2={innerHeight}
-                                stroke="#e0e0dc"
-                                strokeWidth={1}
+                            <ChartAxes
+                                xScale={xScale}
+                                yScale={yScale}
+                                innerWidth={innerWidth}
+                                innerHeight={innerHeight}
+                                xTicks={xTicks}
+                                yTicks={yTicks}
                             />
 
-                            {/* x-axis tick marks and labels */}
-                            {xTicks.map(tick => (
-                                <g key={tick.getTime()}>
-                                    <line
-                                        x1={xScale(tick)} y1={innerHeight}
-                                        x2={xScale(tick)} y2={innerHeight + 4}
-                                        stroke="#c8c8c4"
-                                        strokeWidth={1}
+                            {seriesIds.map((id, i) => {
+                                const raw = allData[id];
+                                if (!raw) return null;
+                                const d = effectiveStart ? raw.filter(p => p.date >= effectiveStart) : raw;
+                                const pathD = lineGen(d);
+                                return pathD ? (
+                                    <path
+                                        key={id}
+                                        d={pathD}
+                                        fill="none"
+                                        stroke={CHART_PALETTE[i % CHART_PALETTE.length]}
+                                        strokeWidth={1.5}
+                                        strokeLinejoin="round"
                                     />
-                                    <text
-                                        x={xScale(tick)}
-                                        y={innerHeight + 8}
-                                        textAnchor="middle"
-                                        dominantBaseline="hanging"
-                                        fill="#888884"
-                                        fontFamily="ui-serif, Georgia, serif"
-                                        fontSize={13}
-                                    >
-                                        {tick.getFullYear()}
-                                    </text>
-                                </g>
-                            ))}
+                                ) : null;
+                            })}
 
-                            {/* data line */}
-                            {pathD && (
-                                <path
-                                    d={pathD}
-                                    fill="none"
-                                    stroke="#1a1a1a"
-                                    strokeWidth={1.5}
-                                    strokeLinejoin="round"
-                                />
-                            )}
+                            {hoveredIndex !== null && visiblePrimaryData[hoveredIndex] && (() => {
+                                const hov = visiblePrimaryData[hoveredIndex];
+                                const hx = xScale(hov.date);
+                                const dateStr = hov.date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+                                const tp = { fontFamily: "ui-serif, Georgia, serif" as const, fontSize: 12, fill: "#1a1a1a" };
 
-                            {/* hover visuals */}
-                            {hoveredPoint && (() => {
-                                const hx = xScale(hoveredPoint.date);
-                                const hy = yScale(hoveredPoint.value);
-                                const flipLeft = hx > innerWidth / 2;
-                                const labelX = flipLeft ? hx - 10 : hx + 10;
-                                const anchor = flipLeft ? "end" : "start";
+                                const rows = seriesConfigs.map((cfg, i) => {
+                                    const d = allData[cfg.id] ?? [];
+                                    const idx = d.length > 0 ? bisectDate(d, hov.date) : -1;
+                                    const pt = idx >= 0 ? d[idx] : null;
+                                    const label = cfg.labelHover ?? cfg.label ?? (isMulti ? cfg.id : "");
+                                    const valueStr = pt ? formatHoverValue(pt.value) : "—";
+                                    return {
+                                        id: cfg.id,
+                                        color: CHART_PALETTE[i % CHART_PALETTE.length],
+                                        text: label ? `${label}: ${valueStr}` : valueStr,
+                                        hy: pt ? yScale(pt.value) : null,
+                                    };
+                                });
 
-                                // measure actual text widths so the rect fits its content
-                                const dateStr = hoveredPoint.date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-                                const valueStr = formatHoverValue(hoveredPoint.value);
-                                const contentW = Math.max(
-                                    measureTextWidth(dateStr, 12),
-                                    measureTextWidth(valueStr, 12),
-                                );
-                                const rectH = 30 + TOOLTIP_PAD_Y * 2;
-                                const rectW = contentW + TOOLTIP_PAD_X * 2;
-                                const rectY = 10 - TOOLTIP_PAD_Y;
-                                const rectX = flipLeft
-                                    ? labelX - contentW - TOOLTIP_PAD_X
-                                    : labelX - TOOLTIP_PAD_X;
-
-                                const textProps = {
-                                    fontFamily: "ui-serif, Georgia, serif" as const,
-                                    fontSize: 12,
-                                    fill: "#1a1a1a",
-                                };
+                                const labelW = Math.max(...rows.map(r => measureTextWidth(r.text, 12)));
+                                const contentW = Math.max(measureTextWidth(dateStr, 12), SWATCH_W + SWATCH_GAP + labelW);
+                                const contentH = TOOLTIP_LINE_H + rows.length * TOOLTIP_LINE_H;
+                                const geo = tooltipGeometry(hx, innerWidth, contentW, contentH);
 
                                 return (
-                                    <g pointerEvents="none">
-                                        <line
-                                            x1={hx} y1={0}
-                                            x2={hx} y2={innerHeight}
-                                            stroke="#c8c8c4"
-                                            strokeWidth={1}
-                                        />
-                                        <circle cx={hx} cy={hy} r={3.5} fill="#1a1a1a" />
-                                        <rect
-                                            x={rectX} y={rectY}
-                                            width={rectW} height={rectH}
-                                            fill="#f8f8f6"
-                                            fillOpacity={0.72}
-                                            stroke="#e0e0dc"
-                                            strokeWidth={0.5}
-                                            rx={3}
-                                        />
-                                        <text
-                                            x={labelX} y={10}
-                                            textAnchor={anchor}
-                                            dominantBaseline="hanging"
-                                            {...textProps}
-                                        >
-                                            {dateStr}
-                                        </text>
-                                        <text
-                                            x={labelX} y={28}
-                                            textAnchor={anchor}
-                                            dominantBaseline="hanging"
-                                            {...textProps}
-                                        >
-                                            {formatHoverValue(hoveredPoint.value)}
-                                        </text>
-                                    </g>
+                                    <ChartTooltip hx={hx} innerHeight={innerHeight} dateStr={dateStr} {...geo}>
+                                        {rows.map(r => r.hy !== null ? (
+                                            <circle key={`dot-${r.id}`} cx={hx} cy={r.hy as number} r={3.5} fill={r.color} />
+                                        ) : null)}
+                                        {rows.map((r, i) => (
+                                            <g key={r.id}>
+                                                <rect
+                                                    x={geo.baseX}
+                                                    y={TOOLTIP_FIRST_ROW_Y + i * TOOLTIP_LINE_H + 3}
+                                                    width={SWATCH_W} height={3}
+                                                    fill={r.color}
+                                                />
+                                                <text
+                                                    x={geo.baseX + SWATCH_W + SWATCH_GAP}
+                                                    y={TOOLTIP_FIRST_ROW_Y + i * TOOLTIP_LINE_H}
+                                                    dominantBaseline="hanging"
+                                                    {...tp}
+                                                >
+                                                    {r.text}
+                                                </text>
+                                            </g>
+                                        ))}
+                                    </ChartTooltip>
                                 );
                             })()}
 
-                            {/* hover capture area — transparent, on top for events */}
                             <rect
                                 x={-MARGIN.left} y={0}
                                 width={innerWidth + MARGIN.left + MARGIN.right}
@@ -389,11 +325,12 @@ export default function LineChart({ series, title, titleFormula, cite }: LineCha
 
             <ChartFooter
                 cite={cite}
-                units={units}
-                seasonalAdj={seasonalAdj}
-                frequency={frequency}
-                lastUpdated={lastUpdated}
-                series={series}
+                units={primaryMeta?.units}
+                seasonalAdj={primaryMeta?.seasonalAdj}
+                frequency={primaryMeta?.frequency}
+                lastUpdated={primaryMeta?.lastUpdated ?? null}
+                seriesLinks={footerLinks}
+                seriesLegend={footerLegend}
             />
         </div>
     );

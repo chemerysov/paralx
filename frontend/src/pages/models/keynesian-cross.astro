@@ -131,8 +131,7 @@ import StackedChart from '../../components/charts/StackedChart.tsx';
 		The following chart shows US GDP over time:
 	</p>
     <LineChart
-        series="GDPCA"
-        titleFormula="Y"
+        series={{ id: "GDPCA", label: "Y" }}
         client:visible
     />
     <details>
@@ -331,6 +330,30 @@ import StackedChart from '../../components/charts/StackedChart.tsx';
     </details>
 
     <p>
+		The following chart plots consumption <Katex formula="C" /> and income <Katex formula="Y" /> side by side as a preliminary visual check on whether the two tend to move together:
+	</p>
+    <LineChart
+        series={[
+            { id: "GDPC1",  label: "Y", labelHover: "Y" },
+            { id: "PCEC96", label: "C", labelHover: "C" },
+        ]}
+        client:visible
+    />
+    <details>
+		<summary>What does this chart actually tell us about the proportionality assumption?</summary>
+		<p>
+			<strong>The chart shows co-movement, which is not the same as proportionality.</strong> Consumption <Katex formula="C" /> and income <Katex formula="Y" /> visibly rise and fall together over the period shown, which is at least consistent with the proportionality assumption. However, two series moving in the same direction tells us nothing about whether the ratio between them is stable, which is what proportionality actually requires. The share of income that goes to consumption could be shifting substantially over time while both series still trend upward together. Co-movement of levels is probably the weakest possible evidence for a proportional relationship.
+		</p>
+		<p>
+			<strong>Consumption is a large component of income, so some co-movement is mechanical.</strong> In the expenditure identity, <Katex formula="C" /> is the largest single component of <Katex formula="Y" />. This means the two series are not independent: changes in consumption directly move measured GDP by construction. Some portion of what looks like a behavioral relationship between the two is simply an accounting consequence of how they are defined. Disentangling the behavioral signal from the mechanical one is not possible from a chart of the two series alone.
+		</p>
+		<p>
+			<strong>The chart cannot address causality or the influence of omitted factors.</strong> The proportionality assumption is a behavioral claim that income <Katex formula="Y" /> drives consumption <Katex formula="C" />. But the chart is equally consistent with consumption driving income, with both being driven by a third factor, or with the relationship being coincidental over this particular period. Visual inspection of two trending series is probably the least informative way to evaluate a causal claim.
+		</p>
+	</details>
+    <hr />
+
+    <p>
         Within this proportionality, the model further assumes that the relationship is linear:
     </p>
     <Katex
@@ -423,8 +446,34 @@ import StackedChart from '../../components/charts/StackedChart.tsx';
     />
     <hr />
 
+    <p>
+		The model takes some of its variables and parameters as given from outside rather than determining them internally:
+	</p>
     <Katex
-        formula="\\bar{a},~~\\bar{b},~~\\bar{G},~~\\bar{X},~~\\bar{I}_{\\text{planned}}\\text{ --- exogenous}"
+        formula="a,~~b,~~I_{\\text{planned}},~~G,~~X,~~\\mu,~~m~~\\text{---}~~\\text{exogenous}"
+        display={true}
+    />
+    <p>
+		Where exogenous means determined outside the model. The model accepts these values as inputs and uses them to produce outputs; it has nothing to say about what causes them or how they might change.
+	</p>
+    <details>
+		<summary>What are some criticisms of the exogeneity assumptions?</summary>
+		<p>
+			<strong>Declaring a variable exogenous relocates the explanatory burden rather than removing it.</strong> When the model treats planned investment <Katex formula="I_{\\text{planned}}" />, government spending <Katex formula="G" />, and exports <Katex formula="X" /> as given from outside, it does not explain them. It accepts them as inputs and uses them to produce outputs. This is a legitimate modeling choice, but it means the model's account of income determination is conditional on a prior account of where these inputs come from, an account the model itself does not provide. Calling something exogenous marks the boundary of what the model attempts to explain, which is a stated limitation, but that boundary is drawn around variables that are plausibly among those most in need of explanation. Investment in particular is typically among the more volatile components of aggregate expenditure and is plausibly responsive to income itself, which may make it a difficult candidate for exogeneity.
+		</p>
+		<p>
+			<strong>The model endogenizes only household behavior, leaving firm behavior outside its scope.</strong> The only variables the model determines internally are consumption <Katex formula="C" /> and imports <Katex formula="M" />, both of which are taken to be functions of household income. Firms appear in the model only as passive recipients of demand: they produce what is demanded, accumulate or draw down inventories as a residual, and adjust output in response to inventory signals. Their investment decisions, however, are taken as given. A model that endogenizes only household responses and treats firm decisions as external inputs is probably not a complete account of how income is determined.
+		</p>
+		<p>
+			<strong>The model assumes supply adjusts passively and without limit to whatever demand emerges.</strong> There is no production function, no labor market, no capacity constraint. When demand rises, output is assumed to rise to meet it; when demand falls, output falls. Prices play no role in the adjustment. This implicit assumption, that supply is infinitely elastic at the current price level, is what allows the multiplier to operate without attenuation: each round of additional spending is assumed to generate additional output without pushing up prices or encountering resource limits. The assumption is probably more defensible when the economy is operating well below capacity, which is arguably the specific context the model was designed to address.
+		</p>
+	</details>
+
+    <p>
+		Denoting exogenous variables with a bar, the expenditure identity becomes:
+	</p>
+    <Katex
+        formula="Y=\\underbrace{\\bar{a}+\\bar{b}\\cdot Y}_C+\\underbrace{\\bar{I}_{\\text{planned}}+I_{\\text{unplanned}}}_I+\\bar{G}+\\bar{X}\\underbrace{-\\bar{\\mu}-\\bar{m}Y}_{-M}"
         display={true}
     />
 </section>
