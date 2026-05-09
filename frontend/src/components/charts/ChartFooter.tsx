@@ -7,7 +7,7 @@ export interface SeriesLink {
 
 export interface SeriesLegendEntry {
     id: string;
-    label: string;
+    label: string;    // KaTeX formula
     metaTitle: string;
 }
 
@@ -17,11 +17,9 @@ interface ChartFooterProps {
     seasonalAdj?: string | null;
     frequency?: string | null;
     lastUpdated?: string | null;
-    // single-series: pass series
-    series?: string;
-    // multi-series: pass seriesLinks
+    // IDs shown as links in the Source line (single or multiple)
     seriesLinks?: SeriesLink[];
-    // bar chart only: extended legend pairing katex label with pulled meta title
+    // Full legend grid: KaTeX label + meta title + link per series
     seriesLegend?: SeriesLegendEntry[];
     // stacked chart only: formula showing how ε is computed
     epsFormula?: string;
@@ -33,7 +31,6 @@ export default function ChartFooter({
     seasonalAdj,
     frequency,
     lastUpdated,
-    series,
     seriesLinks,
     seriesLegend,
     epsFormula,
@@ -46,6 +43,7 @@ export default function ChartFooter({
         fontFamily: "ui-serif, Georgia, serif",
         marginTop: "8px",
         marginBottom: "0",
+        textWrap: "balance",
     };
 
     return (
@@ -59,16 +57,6 @@ export default function ChartFooter({
                     )}
                     <span style={{ display: "block" }}>
                         Source: Federal Reserve Bank of St. Louis{" "}
-                        {series && (
-                            <a
-                                href={`https://fred.stlouisfed.org/series/${series}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ color: "#888884" }}
-                            >
-                                {series}
-                            </a>
-                        )}
                         {seriesLinks && seriesLinks.map((s, i) => (
                             <span key={s.id}>
                                 {i > 0 && ", "}
