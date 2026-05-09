@@ -565,12 +565,13 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                                 const rows: TRow[] = [
                                     ...series.map((cfg, i) => {
                                         const name = cfg.labelHover ?? cfg.label;
-                                        if (cfg.isTotal) return { key: cfg.id, labelSign: "=", labelName: name, valSign: "", valNum: formatHoverValue(computedSum) };
+                                        if (cfg.isTotal) return { key: cfg.id, labelSign: "=", labelName: name, valSign: "=", valNum: formatHoverValue(computedSum) };
                                         const formulaSign = cfg.sign === 1 ? "+" : "-";
                                         const rawVal = hoveredPoint.values[cfg.id] ?? 0;
                                         const isFirst = i === 0;
-                                        const dataSign = rawVal >= 0 ? "+" : "-";
-                                        return { key: cfg.id, labelSign: isFirst ? "" : formulaSign, labelName: name, valSign: isFirst ? (rawVal < 0 ? "-" : "") : dataSign, valNum: formatHoverValue(Math.abs(rawVal)) };
+                                        const effectivePositive = cfg.sign === 1 ? rawVal >= 0 : rawVal <= 0;
+                                        const effectiveSign = effectivePositive ? "+" : "-";
+                                        return { key: cfg.id, labelSign: isFirst ? "" : formulaSign, labelName: name, valSign: isFirst ? (effectivePositive ? "" : "-") : effectiveSign, valNum: formatHoverValue(Math.abs(rawVal)) };
                                     }),
                                     ...(eps !== null ? [{ key: "ε", labelSign: "+", labelName: "ε", valSign: eps >= 0 ? "+" : "-", valNum: formatHoverValue(Math.abs(eps)) }] : []),
                                 ];
