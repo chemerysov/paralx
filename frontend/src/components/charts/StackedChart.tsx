@@ -339,7 +339,7 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                 justifyContent: "center",
                 marginBottom: "8px",
                 fontFamily: "ui-serif, Georgia, serif",
-                fontSize: "0.8rem",
+                fontSize: "1rem",
                 color: "#888884",
             }}>
                 {series.map(s => (
@@ -397,7 +397,7 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                         alignItems: "center",
                         justifyContent: "center",
                         color: "#888884",
-                        fontSize: "0.9rem",
+                        fontSize: "1rem",
                     }}>
                         Loading
                     </div>
@@ -410,7 +410,7 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                         alignItems: "center",
                         justifyContent: "center",
                         color: "#888884",
-                        fontSize: "0.9rem",
+                        fontSize: "1rem",
                     }}>
                         {error}
                     </div>
