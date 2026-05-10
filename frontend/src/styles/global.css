@@ -212,11 +212,6 @@ dd::after {
     margin-bottom: 24px;
 }
 
-.math-inline {
-    overflow-x: auto;
-    max-width: 100%;
-}
-
 hr {
     border: none;
     border-top: 2px solid #e0e0dc;
