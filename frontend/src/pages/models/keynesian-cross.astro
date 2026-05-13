@@ -3,6 +3,7 @@ import Default from '../../layouts/Default.astro';
 import Katex from '../../components/Katex.tsx';
 import LineChart from '../../components/charts/LineChart';
 import StackedChart from '../../components/charts/StackedChart.tsx';
+import TableOfContents from '../../components/TableOfContents.astro';
 ---
 
 <Default
@@ -11,9 +12,12 @@ import StackedChart from '../../components/charts/StackedChart.tsx';
 >
 <article>
 <h1>Keynesian Cross</h1>
+<TableOfContents />
+
+<h2>Preliminaries</h2>
 
 <section>
-    <h2>Gross Domestic Product</h2>
+    <h3>Gross Domestic Product</h3>
 
     <p>
         The exact wording of the definition of gross domestic product varies across institutions. But the core condensed definition is often as follows:
@@ -226,8 +230,10 @@ import StackedChart from '../../components/charts/StackedChart.tsx';
 	</details>
 </section>
 
+<h2>Keynesian Cross</h2>
+
 <section>
-    <h2>Keynesian Cross Assumptions</h2>
+    <h3>Keynesian Cross Assumptions</h3>
 
     <p>
         The Keynesian Cross model introduces a set of assumptions. The first concerns investment. In the expenditure identity, <Katex formula="I" /> includes both intentional capital expenditure and unintentional inventory accumulation. The Keynesian Cross splits these apart:

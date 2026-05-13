@@ -37,6 +37,20 @@ const { title, description } = Astro.props;
 </body>
 
 <script>
+    // Prepends a back-to-top arrow to every h2/h3 in <main>.
+    document.querySelectorAll("main h2, main h3").forEach((h) => {
+        const a = document.createElement("a");
+        a.className = "heading-top";
+        a.href = "#";
+        a.setAttribute("aria-label", "Back to top");
+        a.textContent = "↑";
+        a.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        h.append(a);
+    });
+
     // Appends a collapse button to every <details> element.
     // Clicking it closes the block and scrolls its <summary> back into view.
     document.querySelectorAll("details").forEach((el) => {
