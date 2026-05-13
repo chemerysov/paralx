@@ -427,8 +427,8 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                                 return (
                                     <ChartTooltip hx={hx} innerHeight={innerHeight} dateStr={dateStr} {...geo}>
                                         {rows.map((row, i) => {
-                                            const y = TOOLTIP_FIRST_ROW_Y + i * TOOLTIP_LINE_H;
-                                            const swatchMidY = y + 4.5;
+                                            const y = TOOLTIP_FIRST_ROW_Y + i * TOOLTIP_LINE_H + TOOLTIP_LINE_H / 2;
+                                            const swatchMidY = y;
                                             return (
                                                 <g key={row.key}>
                                                     {(row.swatchType === "area" || row.swatchType === "solid") ? (
@@ -448,22 +448,22 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                                                         />
                                                     )}
                                                     {row.labelSign && (
-                                                        <text x={baseX + c1} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
+                                                        <text x={baseX + c1} y={y} textAnchor="start" dominantBaseline="middle" {...textProps}>
                                                             {row.labelSign}
                                                         </text>
                                                     )}
-                                                    <text x={baseX + c2} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
+                                                    <text x={baseX + c2} y={y} textAnchor="start" dominantBaseline="middle" {...textProps}>
                                                         {row.labelName}
                                                     </text>
-                                                    <text x={baseX + c3} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
+                                                    <text x={baseX + c3} y={y} textAnchor="start" dominantBaseline="middle" {...textProps}>
                                                         :
                                                     </text>
                                                     {row.valSign && (
-                                                        <text x={baseX + c4} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
+                                                        <text x={baseX + c4} y={y} textAnchor="start" dominantBaseline="middle" {...textProps}>
                                                             {row.valSign}
                                                         </text>
                                                     )}
-                                                    <text x={baseX + c5} y={y} textAnchor="start" dominantBaseline="hanging" {...textProps}>
+                                                    <text x={baseX + c5} y={y} textAnchor="start" dominantBaseline="middle" {...textProps}>
                                                         {row.valNum}
                                                     </text>
                                                 </g>

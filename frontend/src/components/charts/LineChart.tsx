@@ -289,14 +289,14 @@ export default function LineChart({ series, title, cite }: LineChartProps) {
                                             <g key={r.id}>
                                                 <rect
                                                     x={geo.baseX}
-                                                    y={TOOLTIP_FIRST_ROW_Y + i * TOOLTIP_LINE_H + 3}
+                                                    y={TOOLTIP_FIRST_ROW_Y + i * TOOLTIP_LINE_H + TOOLTIP_LINE_H / 2 - 1.5}
                                                     width={SWATCH_W} height={3}
                                                     fill={r.color}
                                                 />
                                                 <text
                                                     x={geo.baseX + SWATCH_W + SWATCH_GAP}
-                                                    y={TOOLTIP_FIRST_ROW_Y + i * TOOLTIP_LINE_H}
-                                                    dominantBaseline="hanging"
+                                                    y={TOOLTIP_FIRST_ROW_Y + i * TOOLTIP_LINE_H + TOOLTIP_LINE_H / 2}
+                                                    dominantBaseline="middle"
                                                     {...tp}
                                                 >
                                                     {r.text}
