@@ -3,6 +3,7 @@ import Default from '../../layouts/Default.astro';
 import Katex from '../../components/Katex.tsx';
 import LineChart from '../../components/charts/LineChart';
 import StackedChart from '../../components/charts/StackedChart.tsx';
+import ScatterChart from '../../components/charts/ScatterChart.tsx';
 import TableOfContents from '../../components/TableOfContents.astro';
 ---
 
@@ -15,10 +16,8 @@ import TableOfContents from '../../components/TableOfContents.astro';
 <TableOfContents />
 
 <h2>Preliminaries</h2>
-
+<h3>Gross Domestic Product</h3>
 <section>
-    <h3>Gross Domestic Product</h3>
-
     <p>
         The exact wording of the definition of gross domestic product varies across institutions. But the core condensed definition is often as follows:
     </p>
@@ -131,6 +130,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
         </p>
     </details>
 
+    <hr />
     <p>
 		The following chart shows US GDP over time:
 	</p>
@@ -195,6 +195,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
 		Where <Katex formula="\\varepsilon" /> is the statistical discrepancy, the gap between GDP as measured from the expenditure side and GDP as measured from the income or output side.
 	</p>
 
+    <hr />
     <p>
 		The following chart shows each of these components over time:
 	</p>
@@ -231,10 +232,8 @@ import TableOfContents from '../../components/TableOfContents.astro';
 </section>
 
 <h2>Keynesian Cross</h2>
-
+<h3>Assumption: Planned and Unplanned Investment</h3>
 <section>
-    <h3>Keynesian Cross Assumptions</h3>
-
     <p>
         The Keynesian Cross model introduces a set of assumptions. The first concerns investment. In the expenditure identity, <Katex formula="I" /> includes both intentional capital expenditure and unintentional inventory accumulation. The Keynesian Cross splits these apart:
     </p>
@@ -272,6 +271,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
         display={true}
     />
 
+    <hr />
     <p>
 		As it happens, the Federal Reserve tracks the two components of investment <Katex formula="I" />: fixed private investment, covering deliberate expenditure on capital goods and structures, corresponds to <Katex formula="I_{\\text{planned}}" />, while the change in real private inventories corresponds to <Katex formula="I_{\\text{unplanned}}" />. The two do not sum exactly to gross private domestic investment as independently measured, and the chart includes the residual gap <Katex formula="\\varepsilon" /> as a separate series.
 	</p>
@@ -314,7 +314,10 @@ import TableOfContents from '../../components/TableOfContents.astro';
         formula="Y=C+\\underbrace{I_{\\text{planned}}+I_{\\text{unplanned}}}_I+G+X-M"
         display={true}
     />
+</section>
 
+<h3>Assumption: Linearity of Consumption with Income</h3>
+<section>
     <p>
         The second assumption concerns consumption <Katex formula="C" />. Here the Keynesian Cross makes a behavioral claim: that aggregate consumption <Katex formula="C" /> moves with aggregate income <Katex formula="Y" />. Households that receive more income spend more; households that receive less spend less. The model does not yet specify the precise form of this relationship, but the foundational assumption is the proportionality itself:
     </p>
@@ -335,6 +338,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
         </p>
     </details>
 
+    <hr />
     <p>
 		The following chart plots consumption <Katex formula="C" /> and income <Katex formula="Y" /> side by side as a preliminary visual check on whether the two tend to move together:
 	</p>
@@ -391,6 +395,17 @@ import TableOfContents from '../../components/TableOfContents.astro';
         </p>
     </details>
 
+    <hr />
+    <p>
+        The following chart plots each observation as a point in the space of consumption <Katex formula="C" /> and income <Katex formula="Y" />, removing the time axis to give clearer visibility of co-movement between the two:
+    </p>
+    <ScatterChart
+        client:visible
+        leftSeries={{ id: "GDPC1", label: "Y", labelHover: "Y" }}
+        bottomSeries={{ id: "PCEC96", label: "C", labelHover: "C" }}
+    />
+    <hr />
+
     <p>
         Substituting the linear consumption function back into the expenditure identity replaces <Katex formula="C" /> with its components:
     </p>
@@ -398,8 +413,10 @@ import TableOfContents from '../../components/TableOfContents.astro';
         formula="Y=\\underbrace{a+b\\cdot Y}_C+\\underbrace{I_{\\text{planned}}+I_{\\text{unplanned}}}_I+G+X-M"
         display={true}
     />
-    <hr />
+</section>
 
+<h3>Assumption: Linearity of Imports with Income</h3>
+<section>
     <p>
         A parallel assumption applies to imports <Katex formula="M" />. One justification is that if the consumption proportionality assumption holds and households spend more as income <Katex formula="Y" /> rises, some fraction of that additional spending would likely fall on foreign goods rather than domestic ones. The model encodes this as a proportionality between imports <Katex formula="M" /> and income <Katex formula="Y" />:
     </p>
@@ -450,8 +467,10 @@ import TableOfContents from '../../components/TableOfContents.astro';
         formula="Y=\\underbrace{a+b\\cdot Y}_C+\\underbrace{I_{\\text{planned}}+I_{\\text{unplanned}}}_I+G+X\\underbrace{-\\mu-mY}_{-M}"
         display={true}
     />
-    <hr />
+</section>
 
+<h3>Assumption: Exogeneity of All Else</h3>
+<section>
     <p>
 		The model takes some of its variables and parameters as given from outside rather than determining them internally:
 	</p>
