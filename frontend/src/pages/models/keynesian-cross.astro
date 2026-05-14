@@ -232,7 +232,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
 </section>
 
 <h2>Keynesian Cross</h2>
-<h3>Assumption: Planned and Unplanned Investment</h3>
+<h3>Planned and Unplanned Investment</h3>
 <section>
     <p>
         The Keynesian Cross model introduces a set of assumptions. The first concerns investment. In the expenditure identity, <Katex formula="I" /> includes both intentional capital expenditure and unintentional inventory accumulation. The Keynesian Cross splits these apart:
@@ -316,7 +316,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
     />
 </section>
 
-<h3>Assumption: Linearity of Consumption with Income</h3>
+<h3>Linearity of Consumption with Income</h3>
 <section>
     <p>
         The second assumption concerns consumption <Katex formula="C" />. Here the Keynesian Cross makes a behavioral claim: that aggregate consumption <Katex formula="C" /> moves with aggregate income <Katex formula="Y" />. Households that receive more income spend more; households that receive less spend less. The model does not yet specify the precise form of this relationship, but the foundational assumption is the proportionality itself:
@@ -401,8 +401,8 @@ import TableOfContents from '../../components/TableOfContents.astro';
     </p>
     <ScatterChart
         client:visible
-        leftSeries={{ id: "GDPC1", label: "Y", labelHover: "Y" }}
-        bottomSeries={{ id: "PCEC96", label: "C", labelHover: "C" }}
+        ySeries={{ id: "GDPC1", label: "Y", labelHover: "Y" }}
+        xSeries={{ id: "PCEC96", label: "C", labelHover: "C" }}
     />
     <hr />
 
@@ -415,7 +415,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
     />
 </section>
 
-<h3>Assumption: Linearity of Imports with Income</h3>
+<h3>Linearity of Imports with Income</h3>
 <section>
     <p>
         A parallel assumption applies to imports <Katex formula="M" />. One justification is that if the consumption proportionality assumption holds and households spend more as income <Katex formula="Y" /> rises, some fraction of that additional spending would likely fall on foreign goods rather than domestic ones. The model encodes this as a proportionality between imports <Katex formula="M" /> and income <Katex formula="Y" />:
@@ -469,7 +469,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
     />
 </section>
 
-<h3>Assumption: Exogeneity of All Else</h3>
+<h3>Exogeneity of All Else</h3>
 <section>
     <p>
 		The model takes some of its variables and parameters as given from outside rather than determining them internally:
@@ -499,6 +499,67 @@ import TableOfContents from '../../components/TableOfContents.astro';
 	</p>
     <Katex
         formula="Y=\\underbrace{\\bar{a}+\\bar{b}\\cdot Y}_C+\\underbrace{\\bar{I}_{\\text{planned}}+I_{\\text{unplanned}}}_I+\\bar{G}+\\bar{X}\\underbrace{-\\bar{\\mu}-\\bar{m}Y}_{-M}"
+        display={true}
+    />
+</section>
+
+<h3>Unplanned Investment</h3>
+<section>
+    <Katex
+        formula="P=\\underbrace{\\bar{a}+\\bar{b}\\cdot Y}_C+\\bar{I}_{\\text{planned}}+\\bar{G}+\\bar{X}\\underbrace{-\\bar{\\mu}-\\bar{m}Y}_{-M}"
+        display={true}
+    />
+
+    <Katex
+        formula="I_{\\text{unplanned}}=Y-P"
+        display={true}
+    />
+
+    <Katex
+        formula="I_{\\text{unplanned}}^*=0"
+        display={true}
+    />
+
+    <Katex
+        formula="I_{\\text{unplanned}}^*=Y^*-P^*=0"
+        display={true}
+    />
+
+    <Katex
+        formula="Y^*=P^*"
+        display={true}
+    />
+
+    <Katex
+        formula="Y^*=\\underbrace{\\bar{a}+\\bar{b}\\cdot Y^*}_C+\\bar{I}_{\\text{planned}}+\\bar{G}+\\bar{X}\\underbrace{-\\bar{\\mu}-\\bar{m}Y^*}_{-M}"
+        display={true}
+    />
+</section>
+
+<h3>Finale</h3>
+<section>
+    <Katex
+        formula="Y^*\\cdot(1-\\bar{b}+\\bar{m})=\\bar{a}+\\bar{I}_{\\text{planned}}+\\bar{G}+\\bar{X}-\\bar{\\mu}"
+        display={true}
+    />
+
+    <Katex
+        formula="Y^*=\\cfrac{\\bar{a}+\\bar{I}_{\\text{planned}}+\\bar{G}+\\bar{X}-\\bar{\\mu}}{1-\\bar{b}+\\bar{m}}"
+        display={true}
+    />
+
+    <Katex
+        formula="\\bar{A}=\\bar{a}+\\bar{I}_{\\text{planned}}+\\bar{G}+\\bar{X}-\\bar{\\mu}"
+        display={true}
+    />
+
+    <Katex
+        formula="\\text{Keynesian multiplier}=\\cfrac{1}{1-\\bar{b}+\\bar{m}}"
+        display={true}
+    />
+
+    <Katex
+        formula="Y^*=\\cfrac{\\bar{A}}{\\text{Keynesian multiplier}}"
         display={true}
     />
 </section>

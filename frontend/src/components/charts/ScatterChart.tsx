@@ -39,8 +39,8 @@ interface SeriesMeta {
 }
 
 interface ScatterChartProps {
-    leftSeries: string | ScatterSeriesConfig;
-    bottomSeries: string | ScatterSeriesConfig;
+    xSeries: string | ScatterSeriesConfig;
+    ySeries: string | ScatterSeriesConfig;
     title?: ReactNode;
     cite?: ReactNode;
 }
@@ -58,10 +58,9 @@ function dateKey(d: Date): string {
     return `${y}-${m}-${day}`;
 }
 
-export default function ScatterChart({ leftSeries, bottomSeries, title, cite }: ScatterChartProps) {
-    // leftSeries → y-axis (vertical, left); bottomSeries → x-axis (horizontal, bottom)
-    const yCfg: ScatterSeriesConfig = typeof leftSeries === "string" ? { id: leftSeries } : leftSeries;
-    const xCfg: ScatterSeriesConfig = typeof bottomSeries === "string" ? { id: bottomSeries } : bottomSeries;
+export default function ScatterChart({ xSeries, ySeries, title, cite }: ScatterChartProps) {
+    const xCfg: ScatterSeriesConfig = typeof xSeries === "string" ? { id: xSeries } : xSeries;
+    const yCfg: ScatterSeriesConfig = typeof ySeries === "string" ? { id: ySeries } : ySeries;
 
     const [containerRef, width] = useContainerWidth();
     const [points, setPoints] = useState<ScatterPoint[]>([]);
@@ -196,8 +195,8 @@ export default function ScatterChart({ leftSeries, bottomSeries, title, cite }: 
     const yMeta = metaMap[yCfg.id];
 
     const resolvedTitle = title ?? (
-        yMeta?.title && xMeta?.title
-            ? `${yMeta.title} vs ${xMeta.title}`
+        xMeta?.title && yMeta?.title
+            ? `${xMeta.title} vs ${yMeta.title}`
             : null
     );
 
