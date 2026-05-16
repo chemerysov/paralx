@@ -505,31 +505,44 @@ import TableOfContents from '../../components/TableOfContents.astro';
 
 <h3>Unplanned Investment</h3>
 <section>
+    <p>
+        Collecting all components of planned spending into a single variable <Katex formula="P" />, called planned expenditure:
+    </p>
     <Katex
         formula="P=\\underbrace{\\bar{a}+\\bar{b}\\cdot Y}_C+\\bar{I}_{\\text{planned}}+\\bar{G}+\\bar{X}\\underbrace{-\\bar{\\mu}-\\bar{m}Y}_{-M}"
         display={true}
     />
-
+    <p>
+        Unplanned investment <Katex formula="I_{\\text{unplanned}}" /> is then exactly what remains: actual output <Katex formula="Y" /> minus what was intentionally spent:
+    </p>
     <Katex
         formula="I_{\\text{unplanned}}=Y-P"
         display={true}
     />
-
+    <p>
+        When <Katex formula="Y" /> exceeds <Katex formula="P" />, goods go unsold and inventories rise beyond what firms intended. When <Katex formula="Y" /> falls short of <Katex formula="P" />, inventories are drawn down faster than firms planned. In either case, firms have reason to revise production. The process stabilizes only when <Katex formula="I_{\\text{unplanned}}" /> is zero. Equilibrium, denoted with an asterisk, is defined as this condition:
+    </p>
     <Katex
         formula="I_{\\text{unplanned}}^*=0"
         display={true}
     />
-
+    <p>
+        Substituting the definition of unplanned investment:
+    </p>
     <Katex
         formula="I_{\\text{unplanned}}^*=Y^*-P^*=0"
         display={true}
     />
-
+    <p>
+        Which reduces to the condition that at equilibrium, actual output equals planned expenditure:
+    </p>
     <Katex
         formula="Y^*=P^*"
         display={true}
     />
-
+    <p>
+        Replacing <Katex formula="P^*" /> with its components:
+    </p>
     <Katex
         formula="Y^*=\\underbrace{\\bar{a}+\\bar{b}\\cdot Y^*}_C+\\bar{I}_{\\text{planned}}+\\bar{G}+\\bar{X}\\underbrace{-\\bar{\\mu}-\\bar{m}Y^*}_{-M}"
         display={true}
@@ -538,26 +551,37 @@ import TableOfContents from '../../components/TableOfContents.astro';
 
 <h3>Finale</h3>
 <section>
+    <p>
+        The previous equation has <Katex formula="Y^*" /> on both sides, since consumption <Katex formula="C" /> and imports <Katex formula="M" /> both depend on income. Collecting the <Katex formula="Y^*" /> terms on the left:
+    </p>
     <Katex
         formula="Y^*\\cdot(1-\\bar{b}+\\bar{m})=\\bar{a}+\\bar{I}_{\\text{planned}}+\\bar{G}+\\bar{X}-\\bar{\\mu}"
         display={true}
     />
-
+    <p>
+        Dividing both sides by <Katex formula="(1-\\bar{b}+\\bar{m})" /> gives equilibrium output directly:
+    </p>
     <Katex
         formula="Y^*=\\cfrac{\\bar{a}+\\bar{I}_{\\text{planned}}+\\bar{G}+\\bar{X}-\\bar{\\mu}}{1-\\bar{b}+\\bar{m}}"
         display={true}
     />
-
+    <p>
+        The numerator collects all spending that does not depend on income <Katex formula="Y" />: autonomous consumption <Katex formula="\\bar{a}" />, planned investment <Katex formula="\\bar{I}_{\\text{planned}}" />, government expenditure <Katex formula="\\bar{G}" />, exports <Katex formula="\\bar{X}" />, and autonomous imports <Katex formula="\\bar{\\mu}" /> with a negative sign, since autonomous imports reduce the demand that remains within the domestic economy. Together these constitute autonomous expenditure <Katex formula="\\bar{A}" />:
+    </p>
     <Katex
         formula="\\bar{A}=\\bar{a}+\\bar{I}_{\\text{planned}}+\\bar{G}+\\bar{X}-\\bar{\\mu}"
         display={true}
     />
-
+    <p>
+        The inverse of the denominator is the Keynesian multiplier:
+    </p>
     <Katex
         formula="\\text{Keynesian multiplier}=\\cfrac{1}{1-\\bar{b}+\\bar{m}}"
         display={true}
     />
-
+    <p>
+        The multiplier exceeds one when <Katex formula="\\bar{b}" /> exceeds <Katex formula="\\bar{m}" />, that is, when households spend more of each additional unit of income on domestic goods than they spend on imports. In that case, a one-unit increase in autonomous expenditure <Katex formula="\\bar{A}" /> raises equilibrium output <Katex formula="Y^*" /> by more than one unit: the initial spending becomes income for someone else, a fraction <Katex formula="\\bar{b}" /> of which is spent again, generating further income in successive rounds. The marginal propensity to import <Katex formula="\\bar{m}" /> acts as a leakage, reducing the multiplier by withdrawing some of each round of spending from the domestic income circuit. Equilibrium output is therefore:
+    </p>
     <Katex
         formula="Y^*=\\bar{A}\\cdot\\text{Keynesian multiplier}"
         display={true}

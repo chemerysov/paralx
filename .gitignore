@@ -16,3 +16,6 @@ backend/paralx
 
 # macOS finder file
 .DS_Store
+
+# can be created by running frontend/dev/remove-details.mjs
+frontend/dev/pages-removed-details
