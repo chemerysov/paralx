@@ -1,6 +1,6 @@
 # Paralx
 
-Open source project for transparent dynamic multi-disciplinary finance research.
+Open source project for transparent dynamic finance research.
 
 The project is in early development (v0.0.1). The site is live with an index
 and about page. The first model page is in progress.
