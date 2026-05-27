@@ -136,7 +136,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
 	</p>
     <LineChart
         series={{ id: "GDPCA", label: "Y" }}
-        client:visible
+        client:load
     />
     <details>
         <summary>Why is GDP in this chart labeled "real," and what are chained 2017 dollars?</summary>
@@ -209,7 +209,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
             { id: "IMPGSC1", label: "M", labelHover: "M", sign: -1             },
             { id: "GDPC1",   label: "Y", labelHover: "Y", sign: 1, isTotal: true },
         ]}
-        client:visible
+        client:load
     />
     <details>
 		<summary>Some of these Federal Reserve labels do not quite match the labels as we have discussed them so far. Why?</summary>
@@ -282,7 +282,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
             {id: "CBIC1", label: "I_{\\text{unplanned}}", labelHover: "unplanned", sign: 1, unstable: true},
             {id: "GPDI",  label: "I",                     labelHover: "I",         sign: 1, isTotal: true},
         ]}
-        client:visible
+        client:load
     />
     <details>
 		<summary>How closely does the change in private inventories as we use it here correspond to unplanned investment as the model defines it?</summary>
@@ -347,7 +347,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
             { id: "GDPC1",  label: "Y", labelHover: "Y" },
             { id: "PCEC96", label: "C", labelHover: "C" },
         ]}
-        client:visible
+        client:load
     />
     <details>
 		<summary>What does this chart actually tell us about the proportionality assumption?</summary>
@@ -400,7 +400,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
         The following chart plots each observation as a point in the space of consumption <Katex formula="C" /> and income <Katex formula="Y" />, removing the time axis to give clearer visibility of co-movement between the two:
     </p>
     <ScatterChart
-        client:visible
+        client:load
         ySeries={{ id: "GDPC1", label: "Y", labelHover: "Y" }}
         xSeries={{ id: "PCEC96", label: "C", labelHover: "C" }}
     />
