@@ -65,9 +65,15 @@ jobs:
           trap 'docker rm -f "$cid" >/dev/null' EXIT
           docker cp "$cid:/app/dist" /tmp/dist
           [ -s /tmp/dist/index.html ] || { echo "no index.html in the image"; exit 1; }
-          assets=$(find /tmp/dist/_astro -type f 2>/dev/null | wc -l)
-          echo "$(find /tmp/dist -name '*.html' | wc -l) pages, $assets hashed assets"
-          [ "$assets" -ge 1 ] || { echo "no hashed assets: the frontend build is incomplete"; exit 1; }
+          # Deliberately not looking in a named assets directory. Astro's
+          # default is _astro, this project sets build.assets to _assets, and a
+          # guard that hard-codes either one fails on a perfectly good build.
+          # What actually matters is that the bundler emitted something.
+          pages=$(find /tmp/dist -name '*.html' | wc -l)
+          assets=$(find /tmp/dist \( -name '*.js' -o -name '*.css' \) | wc -l)
+          echo "$pages pages, $assets script and style files"
+          [ "$pages" -ge 1 ] || { echo "no pages: the frontend build is incomplete"; exit 1; }
+          [ "$assets" -ge 1 ] || { echo "no js or css: the frontend build is incomplete"; exit 1; }
 
       - name: what to run next
         run: |
