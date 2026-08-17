@@ -21,10 +21,13 @@ RUN go build -o paralx ./
 
 # stage 3: minimal production image
 FROM alpine:3.21
-# ca-certificates is required for TLS and Let's Encrypt certificate verification
+# ca-certificates is still required: the backend calls the FRED API over HTTPS
+# and has to verify its certificate. It no longer presents one of its own.
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=backend-builder /build/paralx ./
 COPY --from=frontend-builder /build/dist ./dist
-EXPOSE 80 443
+# Plain HTTP only. The Caddy proxy in front terminates TLS and is the only
+# thing bound to 80/443 on the host.
+EXPOSE 8080
 CMD ["./paralx"]

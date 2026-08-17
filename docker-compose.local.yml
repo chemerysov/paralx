@@ -18,7 +18,9 @@ services:
         environment:
             FRED_API_KEY: ${FRED_API_KEY}
             DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-            TLS_DISABLED: "true"
+            # TLS_DISABLED used to be needed here: the server did its own
+            # Let's Encrypt unless told not to. It always speaks plain HTTP now,
+            # so production and local differ only in what sits in front of it.
         depends_on:
             - db
         restart: unless-stopped

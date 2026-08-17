@@ -7,27 +7,56 @@ services:
             POSTGRES_DB: ${POSTGRES_DB}
         volumes:
             - pgdata:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
         restart: unless-stopped
+        # Deliberately not on `web`. Nothing but the backend has any business
+        # reaching the database, and `web` is shared with every other site.
+        networks:
+            - internal
 
     backend:
-        # context project root because need access to frontend/
+        # `image` is what production runs: CI builds it and pushes it to GHCR,
+        # the server only ever pulls. `build` is kept so `docker compose build`
+        # still works locally and tags the same name, rather than a second image
+        # existing under a different one.
+        image: ghcr.io/chemerysov/paralx:latest
         build:
+            # context project root because need access to frontend/
             context: ./
             dockerfile: backend/Dockerfile
-        ports:
-            - "80:80"
-            - "443:443"
-        volumes:
-            - certs:/certs
         environment:
             FRED_API_KEY: ${FRED_API_KEY}
             DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
         depends_on:
-            - db
+            db:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://localhost:8080/_health"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
         # not `always` to allow for docker compose stop
         restart: unless-stopped
+        networks:
+            internal:
+            web:
+                # Caddy reaches this container by alias. The service name
+                # (`backend`) is too generic to expose on a network shared with
+                # every other site.
+                aliases:
+                    - paralx
 
-# declares that cert needs to be created and managed by docker on the server
+networks:
+    # Created once per server, shared with the proxy and every other site.
+    web:
+        external: true
+    internal:
+
 volumes:
-    certs:
     pgdata:

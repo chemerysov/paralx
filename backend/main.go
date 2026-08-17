@@ -3,16 +3,18 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"golang.org/x/crypto/acme/autocert"
 )
 
 const fredBaseURL = "https://api.stlouisfed.org/fred/series/observations"
@@ -209,46 +211,55 @@ func main() {
 		json.NewEncoder(w).Encode(observations)
 	}))
 
+	// The container healthcheck asks for this. It has to sit outside the file
+	// server, which would answer 404 for a path with no file behind it. It says
+	// nothing about the database on purpose: FRED data is served from cache and
+	// a database blip should not take the whole site out of the load balancer.
+	mux.HandleFunc("/_health", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("ok"))
+	})
+
 	// for file system details see backend/Dockerfile
 	mux.Handle("/", http.FileServer(http.Dir("dist")))
 
-	if os.Getenv("TLS_DISABLED") == "true" {
-		// local development: plain HTTP, no autocert
-		log.Println("TLS disabled, serving HTTP on :8080")
-		log.Fatal(http.ListenAndServe(":8080", mux))
-		return
-	}
-
-	manager := &autocert.Manager{
-		// see docker-compose.yml for details on certs volume
-		Cache:      autocert.DirCache("/certs"),
-		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist("paralx.org", "www.paralx.org"),
-	}
-
-	// port 443: HTTPS
-	httpsServer := &http.Server{
-		Addr:      ":443",
-		Handler:   mux,
-		TLSConfig: manager.TLSConfig(),
-	}
-
-	redirectToHTTPS := func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "https://"+r.Host+r.URL.RequestURI(), http.StatusMovedPermanently)
-	}
-	// port 80: redirects to HTTPS and handles Let's Encrypt HTTP challenges
-	httpServer := &http.Server{
-		Addr:    ":80",
-		Handler: manager.HTTPHandler(http.HandlerFunc(redirectToHTTPS)),
+	// Plain HTTP only. The Caddy proxy in front terminates TLS and is the only
+	// thing bound to 80 and 443 on the host, so there is no certificate
+	// handling here at all.
+	addr := ":" + envOr("PORT", "8080")
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	go func() {
-		if err := httpServer.ListenAndServe(); err != nil {
+		log.Printf("serving on %s", addr)
+		if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal(err)
 		}
 	}()
 
-	log.Fatal(httpsServer.ListenAndServeTLS("", ""))
+	// Compose sends SIGTERM on redeploy. Without this the process is killed
+	// mid-response ten seconds later, which shows up as a truncated chart for
+	// anyone unlucky enough to be loading one at that moment.
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("shutdown: %v", err)
+	}
+}
+
+func envOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }
 
 // fetchSeries fetches one series from FRED and upserts it into the database.
