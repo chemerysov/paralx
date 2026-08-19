@@ -4,7 +4,7 @@ Paralx is open source and welcomes contributions.
 
 ## Prerequisites
 
-**Node.js 22.0.0+**
+**Node.js 22.12.0+**
 
 ```bash
 node --version
@@ -102,6 +102,7 @@ again as a gate: an image is not built unless they pass. See
 
 ## Appendix
 
-Node.js 22.0.0+ specifically is required by Astro 6. See
+Node.js 22.12.0+ specifically is required by Astro 7, which is what the
+frontend now runs. The floor moved with it: Astro 6 accepted 22.0.0. See
 `docs/decisions/2026-04-25-nodejs-as-frontend-build-runtime` and
 `docs/decisions/2026-04-18-astro-as-frontend-framework`.
