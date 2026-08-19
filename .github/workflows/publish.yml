@@ -34,6 +34,27 @@ jobs:
         working-directory: backend
         run: go vet ./... && go build -o /dev/null ./
 
+      # The frontend had no gate at all until now: the image build would happily
+      # ship a page with a broken type or an unused import, and neither shows up
+      # in a healthcheck or in the artefact guard below.
+      - uses: pnpm/action-setup@v4
+        with:
+          # The same major the Dockerfile installs, so the lockfile this reads
+          # is the one it was written by.
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          # The same major the Dockerfile builds with, so a check that passes
+          # here cannot fail inside the image for want of a language feature.
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: the frontend must type check and lint clean
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile && pnpm check && pnpm lint
+
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3

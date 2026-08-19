@@ -79,6 +79,27 @@ To stop the backend:
 docker compose -f docker-compose.local.yml down
 ```
 
+## Checks
+
+The backend is vetted and built, and the frontend is type checked and linted,
+before anything is published. Run them locally rather than finding out from the
+pipeline:
+
+```bash
+cd backend
+go vet ./... && go build -o /dev/null ./
+```
+
+```bash
+cd frontend
+pnpm check
+pnpm lint
+```
+
+`deploy.sh` runs all four in its preflight, and the publish workflow runs them
+again as a gate: an image is not built unless they pass. See
+`docs/decisions/2026-08-18-eslint-as-javascript-linter`.
+
 ## Appendix
 
 Node.js 22.0.0+ specifically is required by Astro 6. See

@@ -71,10 +71,12 @@ export default function ScatterChart({ xSeries, ySeries, title, cite }: ScatterC
 
     useEffect(() => {
         let cancelled = false;
-        setPoints([]);
-        setMetaMap({});
-        setLoading(true);
-        setError(null);
+        // No reset of the state above before fetching. Every chart on the
+        // site is an Astro island whose series list is written into the page
+        // at build time, so this dependency never changes and the effect runs
+        // exactly once, on mount, when the state is already at these values.
+        // If a chart ever becomes switchable at runtime, the React answer is
+        // to give it a `key` so it remounts, not to clear the state here.
 
         const ids = [xCfg.id, yCfg.id];
 

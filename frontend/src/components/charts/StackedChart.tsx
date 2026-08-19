@@ -17,7 +17,7 @@ import Katex from "../Katex";
 
 import {
     MARGIN, CSS_HEIGHT, type Observation, formatHoverValue, measureTextWidth, computeXTicks,
-    TOOLTIP_PAD_X, TOOLTIP_PAD_Y, TOOLTIP_LINE_H, TOOLTIP_DATE_Y, TOOLTIP_FIRST_ROW_Y,
+    TOOLTIP_LINE_H, TOOLTIP_DATE_Y, TOOLTIP_FIRST_ROW_Y,
     tooltipGeometry,
     CHART_PALETTE, CHART_TOTAL_COLOR, SWATCH_W, SWATCH_GAP,
 } from "./chartShared";
@@ -194,6 +194,10 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
                 setError("Failed to load data.");
                 setLoading(false);
             });
+        // `series` is left out on purpose. It is written into the page at build
+        // time and is the same array for the whole life of the island, so
+        // naming it here would only invite a refetch that cannot happen.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const innerWidth = width - MARGIN.left - MARGIN.right;
@@ -227,16 +231,20 @@ export default function StackedChart({ series, title, titleFormula, cite }: Stac
         .range([innerHeight, 0]);
 
     const yTicks = yScale.ticks(6);
-    const [, yDomainMax] = yScale.domain() as [number, number];
 
     const xTicks = computeXTicks(aligned, innerWidth, xScale.domain() as [Date, Date]);
 
-    const makeAreaPath = (bandData: BandPoint[]) =>
-        area<BandPoint>()
+    const makeAreaPath = (bandData: BandPoint[]) => {
+        // The generator is named rather than called straight off the end of the
+        // chain. `.y1(...)` followed by `(bandData)` on the next line is a call
+        // that reads like two statements, and it is exactly the shape that
+        // becomes a real bug the moment a line above it loses its semicolon.
+        const generator = area<BandPoint>()
             .x(d => xScale(d.date))
             .y0(d => yScale(d.y0))
-            .y1(d => yScale(d.y1))
-            (bandData);
+            .y1(d => yScale(d.y1));
+        return generator(bandData);
+    };
 
     const totalLineGenerator = line<{ date: Date; value: number }>()
         .x(d => xScale(d.date))

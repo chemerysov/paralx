@@ -55,6 +55,16 @@ preflight() {
 	else
 		echo "  go is not installed here, the workflow will build the backend"
 	fi
+
+	# The frontend gets the same treatment the backend already had. Astro will
+	# happily build a page with a broken type or an unused import, and neither
+	# shows up in a healthcheck. The workflow runs these too, but finding out
+	# here costs seconds instead of a round trip through a build.
+	if command -v pnpm >/dev/null 2>&1 && [ -d frontend/node_modules ]; then
+		(cd frontend && pnpm check && pnpm lint)
+	else
+		echo "  pnpm or frontend/node_modules is not available here, the workflow will run the checks"
+	fi
 }
 
 LIB="${DEPLOY_LIB:-$(dirname "$0")/../infrastructure/deploy/deploy-lib.sh}"

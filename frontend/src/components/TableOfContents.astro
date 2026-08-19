@@ -11,13 +11,17 @@
         const main = document.querySelector("main");
         if (!nav || !main) return;
 
-        const headings = Array.from(main.querySelectorAll("h2, h3"));
+        // Typed as headings rather than left as Element. A comma selector is
+        // not one of the tag names TypeScript knows how to narrow, so without
+        // this the list comes back as plain Elements and setting .style on one
+        // does not type check.
+        const headings = Array.from(main.querySelectorAll<HTMLHeadingElement>("h2, h3"));
         if (headings.length === 0) { nav.remove(); return; }
 
         const headerHeight = document.querySelector("header")?.offsetHeight ?? 0;
 
-        const used = new Map();
-        const slugify = (text) =>
+        const used = new Map<string, number>();
+        const slugify = (text: string) =>
             text.toLowerCase().trim()
                 .replace(/[^\w\s-]/g, "")
                 .replace(/\s+/g, "-")
