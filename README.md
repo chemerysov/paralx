@@ -33,7 +33,8 @@ GitHub.
 
 `deploy.sh` holds only what is particular to this project. The steps themselves
 are shared with the other sites and live in `infrastructure/deploy/deploy-lib.sh`,
-which this expects to find in a sibling `infrastructure/` directory.
+which this expects to find in an `infrastructure/` directory at or above this
+repo.
 
 paralx runs on `eu1`, not on the box the other sites share, because it is the
 only one with a database behind it. The backend speaks plain HTTP on 8080 and

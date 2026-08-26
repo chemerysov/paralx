@@ -67,13 +67,31 @@ preflight() {
 	fi
 }
 
-LIB="${DEPLOY_LIB:-$(dirname "$0")/../infrastructure/deploy/deploy-lib.sh}"
-[ -f "$LIB" ] || {
-	echo "Cannot find the shared deploy steps at:" >&2
-	echo "  $LIB" >&2
+# The site repos are grouped into subdirectories, so infrastructure is no longer
+# a sibling of every one of them and cannot be reached by a fixed number of
+# `..`. Walk up from this script instead, taking the first infrastructure found.
+# This holds wherever a repo is moved to, as long as infrastructure sits at or
+# above the level the grouping starts from.
+find_deploy_lib() {
+	local dir
+	dir="$(cd "$(dirname "$0")" && pwd)"
+	while [ "$dir" != "/" ]; do
+		if [ -f "$dir/infrastructure/deploy/deploy-lib.sh" ]; then
+			printf '%s\n' "$dir/infrastructure/deploy/deploy-lib.sh"
+			return 0
+		fi
+		dir="$(dirname "$dir")"
+	done
+	return 1
+}
+
+LIB="${DEPLOY_LIB:-$(find_deploy_lib || true)}"
+[ -n "$LIB" ] && [ -f "$LIB" ] || {
+	echo "Cannot find the shared deploy steps." >&2
 	echo >&2
-	echo "They live in the infrastructure repo, which this expects as a sibling of this one." >&2
-	echo "Clone it next to this repo, or point DEPLOY_LIB at deploy-lib.sh." >&2
+	echo "They live in the infrastructure repo, which this expects to find as" >&2
+	echo "infrastructure/deploy/deploy-lib.sh in this directory or any above it." >&2
+	echo "Clone it there, or point DEPLOY_LIB at deploy-lib.sh." >&2
 	exit 1
 }
 # shellcheck source=/dev/null
